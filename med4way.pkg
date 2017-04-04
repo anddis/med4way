@@ -1,0 +1,15 @@
+*************** med4way.pkg
+d 'MED4WAY': 4-way decomposition using parametric regression models
+d
+d A.Discacciati, A.Bellavia, L.Valeri
+d
+d After installation, see {bf:help med4way}
+d
+d Current version: 2.0.0
+d Distribution-Date: 20170327
+d
+f med4way.ado
+f med4wayEngine.ado
+f med4way.sthlp
+f med4way_example_1.dta
+f med4way_example_2.dta

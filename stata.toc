@@ -1,0 +1,4 @@
+*************** stata.toc
+v 3
+d 'MED4WAY': 4-way decomposition using parametric regression models
+p med4way
