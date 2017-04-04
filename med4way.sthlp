@@ -137,7 +137,7 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 {title:Examples}
 
 {pstd}Download example datasets in the current working directory{p_end}
-{phang2}{stata `"net get med4way, from("http://raw.githubusercontent.com/anddis/med4way/master/")"'}{p_end}
+{phang2}{stata `"net get med4way, from("https://raw.githubusercontent.com/anddis/med4way/master/")"'}{p_end}
 
     {title:Binary outcome, binary mediator}
 
