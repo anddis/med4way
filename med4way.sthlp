@@ -203,8 +203,7 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 
 {pstd}Andrea Discacciati [1], Andrea Bellavia [2,3], Linda Valeri [4,5]{p_end}
 
-
-{pstd}[1] Unit of Biostatistics, Institute of Environmental Medicine (IMM), Karolinska Institutet, Stockholm, Sweden{p_end}
+{pstd}[1] Unit of Biostatistics, Karolinska Institutet, Stockholm, Sweden{p_end}
 {pstd}[2] Department of Environmental Health, Harvard T.H. Chan School of Public Health, Boston, MA{p_end}
 {pstd}[3] Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA{p_end}
 {pstd}[4] Department of Psychiatry, Harvard Medical School, Boston, MA{p_end}

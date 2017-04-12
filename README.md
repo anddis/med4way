@@ -19,23 +19,23 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 
 ### Installation
 
--To install the current version of `med4way` directly from GitHub, run:
+- To install the current version of `med4way` directly from GitHub, run:
 ```Stata
 net install med4way, from("https://raw.githubusercontent.com/anddis/med4way/master/")
 ```
 from within a web-aware Stata (version 13+).
 
--For older versions of Stata, download and extract the [zip file](https://github.com/anddis/med4way/archive/master.zip) and then run:
+- For older versions of Stata, download and extract the [zip file](https://github.com/anddis/med4way/archive/master.zip) and then run:
 ```Stata
 net install med4way, from(mydir)
 ```
 from within Stata, where *mydir* is the directory that containes the extracted files.
 
--After installation, see the help file:
+- After installation, see the help file:
 ```Stata
 help med4way
 ```
--To download in the current working directory the datasets needed to run the example code in the help file, type:
+- To download in the current working directory the datasets needed to run the example code in the help file, type:
 ```Stata
 net get med4way, from("https://raw.githubusercontent.com/anddis/med4way/master/")
 ```
@@ -44,11 +44,7 @@ net get med4way, from("https://raw.githubusercontent.com/anddis/med4way/master/"
 
 Andrea Discacciati (1), Andrea Bellavia (2,3), Linda Valeri (4,5)
 
-(1) Unit of Biostatistics, Institute of Environmental Medicine (IMM), Karolinska Institutet, Stockholm, Sweden
-(2) Department of Environmental Health, Harvard T.H. Chan School of Public Health, Boston, MA
-(3) Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA
-(4) Department of Psychiatry, Harvard Medical School, Boston, MA
-(5) Psychiatric Biostatistics Laboratory, McLean Hospital, Belmont, MA
+*(1) Unit of Biostatistics, Karolinska Institutet, Stockholm, Sweden (2) Department of Environmental Health, Harvard T.H. Chan School of Public Health, Boston, MA (3) Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA (4) Department of Psychiatry, Harvard Medical School, Boston, MA (5) Psychiatric Biostatistics Laboratory, McLean Hospital, Belmont, MA*
 
 ### References
 
