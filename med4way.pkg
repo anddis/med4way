@@ -10,6 +10,8 @@ d Current version: 2.1.0
 d Distribution-Date: 26jul2017
 d
 f med4way.ado
+f med4way_engine.ado
+f med4way_normal_ll.ado
 f med4way.sthlp
 f med4way_example_1.dta
 f med4way_example_2.dta
