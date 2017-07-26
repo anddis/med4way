@@ -324,13 +324,15 @@ program define regressml, eclass
 	gettoken dep indep: varlist
 	
 	qui _regress `dep' `indep' if `touse'
-	tempname breg sigma2reg
-	matrix `breg' = e(b)
-	matrix coleq `breg' = "mu"
+	tempname sigma2reg
 	matrix `sigma2reg' = e(rmse)^2 * (e(df_r) / e(N))
 	matrix colnames `sigma2reg' = "sigma2:_cons"
 
 	if "`onlybeta'"=="false" {
+		tempname breg
+		matrix `breg' = e(b)
+		matrix coleq `breg' = "mu"
+		
 		qui ml model lf med4way_normal_ll (mu: `dep' = `indep') (sigma2:) if `touse', /*
 			*/ title("Linear regression (Maximum Likelihood)") //waldtest(0)
 		qui ml init `breg' `sigma2reg'
@@ -345,14 +347,13 @@ program define regressml, eclass
 	else if "`onlybeta'"== "true" {
 		matrix `bML' = e(b), `sigma2reg'
 		matrix `VML' = J(colsof(e(b))+1, colsof(e(b))+1, 0)
-	}
-	local c : colfullnames `bML'
-	local c : subinstr local c "sigma2:_cons" "sigma2:sigma2"
-	matrix colnames `bML' = `c'
-	matrix colnames `VML' = `c'
-	matrix rownames `VML' = `c' 
-	local nm = e(N)
+		
+		local c : colfullnames e(b)
+		matrix colnames `VML' = `c' "sigma2:_cons"
+		matrix rownames `VML' = `c' "sigma2:_cons"
+	} 
 	
+	local nm = e(N)
 	ereturn post `bML' `VML', depname(`mvar') obs(`nm')
 end regressml
 
