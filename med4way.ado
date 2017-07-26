@@ -6,7 +6,12 @@ Previous versions:
 v2.0.0 - 27mar2017
 */
 
-// capture program drop med4way validate_c m4w_engine normalml_lf regressml
+// capture program drop med4way 
+// capture program drop validate_c
+// capture program drop m4w_engine
+// capture program drop normalml_lf
+// capture program drop regressml
+
 program define med4way, eclass
 	version 10.0
 
