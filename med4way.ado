@@ -6,7 +6,7 @@ Previous versions:
 v2.0.0 - 27mar2017
 */
 
-capture program drop med4way
+// capture program drop med4way validate_c m4w_engine normalml_lf regressml
 program define med4way, eclass
 	version 10.0
 
@@ -523,7 +523,6 @@ end med4way
 /*********************
 * validate_c
 **********************/
-capture program drop validate_c
 program define validate_c, rclass
 	syntax [if], [c(string) cvars(string)] wrnngtxt(numlist)
 	//if c is missing, take the mean for all the variables in cvars
@@ -922,7 +921,6 @@ end m4w_engine
 /**********************
 * normalml_lf
 **********************/
-capture program drop normalml_lf
 program normalml_lf
 	version 10.0
 	args lnfj mu sigma2
@@ -934,7 +932,6 @@ end normalml_lf
 /**********************
 * regressml
 **********************/
-capture program drop regressml
 program define regressml, eclass
 	version 10.0
 	syntax varlist(min=2 numeric) [if] [, onlybeta(string) level(cilevel)]
