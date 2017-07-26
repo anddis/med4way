@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 20170327}{...}
+{* *! version 2.1.0 26jul2017}{...}
 
 {cmd:help med4way}
 {hline}
@@ -17,7 +17,7 @@
 {cmd:med4way} [{it:yvar}] {it:avar} {it:mvar} [{it:cvars}] {ifin}, {opt a0(#)} {opt a1(#)} {opt m(#)} 
 	{opt yreg(string)} {opt mreg(string)} [{opth c(string)}
 	{opt casec:ontrol} {opt full:output} {opt nodeltam:ethod} {opt robust} {opt level(#)} 
-	{opt boot:strap} {opt reps(#)} {opt seed(#)} {bf:{ul:sa}ving(}{it:filename}{bf:, ...)}]
+	{opt boot:strap} {opt reps(#)} {opt seed(#)} {bf:{ul:sa}ving(}{it:filename}{bf:, ...)} {opt bca}]
 
 
 {phang}
@@ -53,6 +53,7 @@
 {synopt :{opt reps(#)}}perform # bootstrap replications; default is {cmd: reps(1000)}{p_end}
 {synopt :{opt seed(#)}}set random-number seed to #{p_end}
 {synopt :{help prefix_saving_option:{bf:{ul:sa}ving(}{it:filename}{bf:, ...)}}}save results to filename; save statistics in double precision; save results to filename every # replications{p_end}
+{synopt :{opt bca}}compute acceleration for BCa confidence intervals{p_end}
 {synoptline}
 {p2colreset}{...}
 {p 4 6 2}* are required.{p_end}
@@ -119,7 +120,7 @@ Example: the covariates specified are {it:cvar1 cvar2 cvar3} and the user wants 
 {opt level(#)}; see {helpb estimation options##level():[R] estimation options}.
 
 {phang}
-{opt boot:strap} uses the bootstrap to calculate bias-corrected confidence intervals for the estimated quantities.
+{opt boot:strap} uses the bootstrap to calculate confidence intervals (CIs). By default, bias-corrected CIs are calculated. Normal-based and percentile CIs can be obtained with the post-estimation command {helpb estat bootstrap}.
 
 {phang}
 {opt reps(#)} specifies the number of bootstrap replications to be performed. The default is 1,000.
@@ -132,6 +133,9 @@ Example: the covariates specified are {it:cvar1 cvar2 cvar3} and the user wants 
 
 {pmore}
 See {help prefix_saving_option} for details about {it:suboptions}.
+
+{phang}
+{opt bca} estimates the acceleration used to construct bias-corrected and accelerated confidence intervals.
 
 
 {title:Examples}
@@ -150,6 +154,8 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 {pstd}Logistic regression model for the outcome; Logistic regression model for the mediator; Bootstrap confidence intervals (500 replicates){p_end}
 {phang2}{stata med4way y_bin treat m_bin cvar1 cvar2 cvar3, yreg(logistic) mreg(logistic) a0(0) a1(1) m(0) c(0 0 .) bootstrap reps(500) seed(1234)}
 
+{phang2}{stata estat bootstrap, all noheader}
+
     {title:Survival outcome, binary mediator}
     
 {pstd}Load simulated data{p_end}
@@ -167,14 +173,15 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 {pstd}
 {cmd:med4way} stores the following in {cmd:e()}:
 
-{synoptset 15 tabbed}{...}
+{synoptset 20 tabbed}{...}
 {p2col 5 15 19 2: Scalars}{p_end}
 {synopt:{cmd:e(a0)}}referent treatment level{p_end}
 {synopt:{cmd:e(a1)}}actual treatment level{p_end}
 {synopt:{cmd:e(m)}}level of the mediator used for the 4-way decomposition{p_end}
-{synopt:{cmd:e(N_reps)}}number of bootstrap replications{p_end}
+{synopt:{cmd:e(level)}}confidence level{p_end}
+{p2coldent: * {cmd:e(N_reps)}}number of requested bootstrap replications{p_end}
 
-{synoptset 15 tabbed}{...}
+{synoptset 20 tabbed}{...}
 {p2col 5 15 19 2: Macros}{p_end}
 {synopt:{cmd:e(cmdline)}}command as typed{p_end}
 {synopt:{cmd:e(cmd)}}{cmd:med4way}{p_end}
@@ -185,13 +192,26 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 {synopt:{cmd:e(yreg)}}form of the regression model for the outcome{p_end}
 {synopt:{cmd:e(mreg)}}form of the regression model for the mediator{p_end}
 {synopt:{cmd:e(estimands)}}acronyms of the estimated quantities{p_end}
-{synopt:{cmd:e(c)}}values of {it:cvars} at which the 4-way decomposition was computed{p_end}
+{p2coldent: * {cmd:e(prefix)}}{cmd:bootstrap}{p_end}
 {synopt:{cmd:e(properties)}}{cmd:b V}{p_end}
 
-{synoptset 15 tabbed}{...}
+{synoptset 20 tabbed}{...}
 {p2col 5 15 19 2: Matrices}{p_end}
 {synopt:{cmd:e(b)}}coefficient vector{p_end}
 {synopt:{cmd:e(V)}}variance-covariance matrix of the estimators{p_end}
+{synopt:{cmd:e(c)}}values of {it:cvars} at which the 4-way decomposition was computed{p_end}
+{p2coldent: * {cmd:e(b_bs)}}bootstrap estimates{p_end}
+{p2coldent: * {cmd:e(reps)}}number of nonmissing results{p_end}
+{p2coldent: * {cmd:e(bias)}}estimated biases{p_end}
+{p2coldent: * {cmd:e(se)}}estimated standard errors{p_end}
+{p2coldent: * {cmd:e(z0)}}median biases{p_end}
+{p2coldent: * {cmd:e(accel)}}estimated accelerations{p_end}
+{p2coldent: * {cmd:e(ci_normal)}}normal-approximation CIs{p_end}
+{p2coldent: * {cmd:e(ci_percentile)}}percentile CIs{p_end}
+{p2coldent: * {cmd:e(ci_bc)}}bias-corrected CIs{p_end}
+{p2coldent: * {cmd:e(ci_bca)}}bias-corrected and accelerated CIs{p_end}
+
+{p 4 6 2}* are stored only if the option {opt bootstrap} is specified.{p_end}
 
 
 {title:References}
@@ -203,8 +223,8 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 
 {pstd}Andrea Discacciati [1], Andrea Bellavia [2,3], Linda Valeri [4,5]{p_end}
 
-{pstd}[1] Unit of Biostatistics, Karolinska Institutet, Stockholm, Sweden{p_end}
-{pstd}[2] Department of Environmental Health, Harvard T.H. Chan School of Public Health, Boston, MA{p_end}
-{pstd}[3] Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA{p_end}
-{pstd}[4] Department of Psychiatry, Harvard Medical School, Boston, MA{p_end}
-{pstd}[5] Psychiatric Biostatistics Laboratory, McLean Hospital, Belmont, MA{p_end}
+{pstd}[1] {it:Unit of Biostatistics, Karolinska Institutet, Stockholm, Sweden}{p_end}
+{pstd}[2] {it:Department of Environmental Health, Harvard T.H. Chan School of Public Health, Boston, MA}{p_end}
+{pstd}[3] {it:Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA}{p_end}
+{pstd}[4] {it:Department of Psychiatry, Harvard Medical School, Boston, MA}{p_end}
+{pstd}[5] {it:Psychiatric Biostatistics Laboratory, McLean Hospital, Belmont, MA}{p_end}

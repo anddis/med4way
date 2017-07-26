@@ -6,11 +6,10 @@ d A.Discacciati, A.Bellavia, L.Valeri
 d
 d After installation, see help med4way
 d
-d Current version: 2.0.0
-d Distribution-Date: 20170327
+d Current version: 2.1.0
+d Distribution-Date: 26jul2017
 d
 f med4way.ado
-f med4wayEngine.ado
 f med4way.sthlp
 f med4way_example_1.dta
 f med4way_example_2.dta

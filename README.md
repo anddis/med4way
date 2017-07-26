@@ -1,8 +1,8 @@
 # med4way
 ### A Stata command for the 4-way decomposition using parametric regression models
 
-- Current version: `2.0.0` 
-- Release date: `27mar2017`
+- Current version: `2.1.0` 
+- Release date: `26jul2017`
 
 ---
 
