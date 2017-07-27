@@ -1,6 +1,5 @@
-*! Hello, I am med4way_engine.ado
-*! I am a program called by -med4way-
-*! v2.1.0 - 26jul2017
+*! Hello, I'm med4way_engine.ado
+*! I'm a subprogram called by -med4way-
 
 capture program drop med4way_engine
 program define med4way_engine, eclass
@@ -312,7 +311,7 @@ capture program drop regressml
 program define regressml, eclass
 	version 10.0
 	syntax varlist(min=2 numeric) [if] [, onlybeta(string) level(cilevel)]
-	// the idea behind the onlybeta option is that, when regressML is called
+	// the idea behind the onlybeta option is that, when regressml is called
 	// within a bootstrap, it's useless to maximize the likelihood to get the SE
 	// of sigma2 (the reason I wrote this program). 
 	// Might as well return a matrix of 0 for e(V) and save time.
@@ -327,6 +326,7 @@ program define regressml, eclass
 	tempname sigma2reg
 	matrix `sigma2reg' = e(rmse)^2 * (e(df_r) / e(N))
 	matrix colnames `sigma2reg' = "sigma2:_cons"
+	local nm = e(N)
 
 	if "`onlybeta'"=="false" {
 		tempname breg
@@ -353,7 +353,6 @@ program define regressml, eclass
 		matrix rownames `VML' = `c' "sigma2:_cons"
 	} 
 	
-	local nm = e(N)
 	ereturn post `bML' `VML', depname(`mvar') obs(`nm')
 end regressml
 
@@ -426,7 +425,7 @@ real scalar m4w_formulas(real vector b, string scalar t, real vector c, real sca
 {
 
 	real scalar offsetcox, i, betaTc, a0, a1, m, a1Ma0, a12Ma02, a1Tm, a0Tm, pie, intmed, intref, cde, A, B, te, ereri_cde, ereri_intref, ereri_intmed, ereri_pie, tereri
-	real vector theta, beta, bb
+	real vector theta, beta
 	
 
 	//--------------theta------------------- | -------------beta----------------
@@ -442,20 +441,16 @@ real scalar m4w_formulas(real vector b, string scalar t, real vector c, real sca
 	}
 
 	// split b into beta and theta - this makes the formulas below easier to read
-	// especially because offsetcox is no longer needed
-	theta = b[1::4+nc+offsetcox] 		// outcome model
-	beta  = b[5+nc+offsetcox::cols(b)] 	// mediator model
+	// especially because after this offsetcox is not needed anymore
+	theta = b[|1 \ 4+nc+offsetcox|] 		// outcome model
+	beta  = b[|5+nc+offsetcox \ cols(b)|] 	// mediator model
 
-	if (nc>0) {
-		bb = J(1, nc, .)
-		for (i=1; i<=nc; i++) {
-			bb[i] = beta[1+i]
-		}
-		betaTc = bb*c'
-	}
-	else {
-		betaTc = 0
-	}
+    if (nc>0) {
+        betaTc = beta[|2 \ nc+1|]*c'		// linear combination covariates ("bcc" in vanderWeele)
+    }
+    else {
+        betaTc = 0
+    }
 
 	a0 = aam[1]
 	a1 = aam[2]

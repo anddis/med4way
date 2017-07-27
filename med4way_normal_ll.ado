@@ -1,6 +1,5 @@
-*! Hello, I am med4way_normal_ll.ado
-*! I am a program called by -med4way-
-*! v2.1.0 - 26jul2017
+*! Hello, I'm med4way_normal_ll.ado
+*! I'm a subprogram called by -med4way-
 
 capture program drop med4way_normal_ll
 program med4way_normal_ll
