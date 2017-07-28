@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.1.0 26jul2017}{...}
+{* *! version 2.1.1 28jul2017}{...}
 
 {cmd:help med4way}
 {hline}

@@ -273,8 +273,10 @@ program define med4way_engine, eclass
 	// Estimation: delta method or bootstrap
 	if (("`deltamethod'" == "true") & ("`bootstrap'" == "false")) {
 		foreach j of local names {
-			mata: m4w_deriv("`j'", "`betay'",  "`betam'", "`Vy'", "`Vm'", /*
-				*/ "`c'", `nc', "`yreg'", "`mreg'", "`aam'", "false")
+			mata: m4w_deriv("`j'", st_matrix("`betay'"),  st_matrix("`betam'"), /*
+				*/ st_matrix("`Vy'"), st_matrix("`Vm'"), /*
+				*/ st_matrix("`c'"), `nc', "`yreg'", "`mreg'", /*
+				*/ st_matrix("`aam'"), "false")
 			matrix `bEstimates'[1, colnumb(`bEstimates', "`j'")] = `p_estimate'
 			matrix `VEstimates'[colnumb(`VEstimates', "`j'"), /*
 				*/ rownumb(`VEstimates', "`j'")] = `dm_variance'
@@ -282,8 +284,10 @@ program define med4way_engine, eclass
 	}
 	else if (("`deltamethod'" == "false") & ("`bootstrap'" == "true")) {
 		foreach j of local names {
-			mata: m4w_deriv("`j'", "`betay'",  "`betam'", "`Vy'", "`Vm'", /*
-				*/ "`c'", `nc', "`yreg'", "`mreg'", "`aam'", "true")			
+			mata: m4w_deriv("`j'", st_matrix("`betay'"),  st_matrix("`betam'"), /*
+				*/ st_matrix("`Vy'"), st_matrix("`Vm'"), /*
+				*/ st_matrix("`c'"), `nc', "`yreg'", "`mreg'", /*
+				*/ st_matrix("`aam'"), "true")			
 			matrix `bEstimates'[1, colnumb(`bEstimates', "`j'")] = `p_estimate'
 		}
 	}
@@ -364,26 +368,19 @@ clear mata
 mata: 
 mata set matastrict on 
 
-void function m4w_deriv(string scalar t, string scalar betay, string scalar betam, string scalar Vy, string scalar Vm, string scalar c, real scalar nc, string scalar yreg, string scalar mreg, string vector aam, string scalar boot) 
-{	
+void function m4w_deriv(string scalar t, real vector betay, real vector betam, /*
+					*/ real matrix Vy, real matrix Vm, real vector c, /* 
+					*/ real scalar nc, string scalar yreg, string scalar mreg, /*
+					*/ real vector aam, string scalar boot) {	
 
-	real vector betayx, betamx, b, aamx, cx
-	real matrix Vyx, Vmx, V 
+	real vector b
+	real matrix V 
 	real scalar p_estimate, dm_variance 
 	pointer p
 	transmorphic D, G
-
-	betayx = st_matrix(betay)
-	betamx = st_matrix(betam)
-
-	Vyx = st_matrix(Vy)
-	Vmx = st_matrix(Vm)
 	
-	b = betayx, betamx
-	V = blockdiag(Vyx, Vmx)
-	
-	cx = st_matrix(c)
-	aamx = st_matrix(aam)
+	b = betay, betam
+	V = blockdiag(Vy, Vm)
 
 	p = findexternal("m4w_formulas()") // pointer!
 	
@@ -392,11 +389,11 @@ void function m4w_deriv(string scalar t, string scalar betay, string scalar beta
 	deriv_init_params(D, b)
 	deriv_init_argument(D, 1, p)
 	deriv_init_argument(D, 2, t)
-	deriv_init_argument(D, 3, cx)
+	deriv_init_argument(D, 3, c)
 	deriv_init_argument(D, 4, nc)
 	deriv_init_argument(D, 5, yreg)
 	deriv_init_argument(D, 6, mreg)
-	deriv_init_argument(D, 7, aamx)
+	deriv_init_argument(D, 7, aam)
 
 	p_estimate = deriv(D, 0)
 	st_local("p_estimate", strofreal(p_estimate))
@@ -412,8 +409,9 @@ void function m4w_deriv(string scalar t, string scalar betay, string scalar beta
 /**********************
 * m4w_eval (mata)
 **********************/
-void m4w_eval(real vector b, pointer(real scalar function) scalar f, string scalar t, real vector c, real scalar nc, string scalar yreg, string scalar mreg, real vector aam, v)
-{
+void m4w_eval(real vector b, pointer(real scalar function) scalar f, /*
+			*/ string scalar t, real vector c, real scalar nc, /*
+			*/ string scalar yreg, string scalar mreg, real vector aam, v) {
 	v = (*f)(b, t, c, nc, yreg, mreg, aam)
 }
 
@@ -421,10 +419,13 @@ void m4w_eval(real vector b, pointer(real scalar function) scalar f, string scal
 /**********************
 * m4w_formulas (mata)
 **********************/
-real scalar m4w_formulas(real vector b, string scalar t, real vector c, real scalar nc, string scalar yreg, string scalar mreg, real vector aam)
-{
+real scalar m4w_formulas(real vector b, string scalar t, real vector c, /*
+					*/ real scalar nc, string scalar yreg, string scalar mreg, /*
+					*/ real vector aam) {
 
-	real scalar offsetcox, i, betaTc, a0, a1, m, a1Ma0, a12Ma02, a1Tm, a0Tm, pie, intmed, intref, cde, A, B, te, ereri_cde, ereri_intref, ereri_intmed, ereri_pie, tereri
+	real scalar offsetcox, i, betaTc, a0, a1, m, a1Ma0, a12Ma02, a1Tm, a0Tm, /*
+			*/ pie, intmed, intref, cde, A, B, te, ereri_cde, ereri_intref, /*
+			*/ ereri_intmed, ereri_pie, tereri
 	real vector theta, beta
 	
 
@@ -432,7 +433,7 @@ real scalar m4w_formulas(real vector b, string scalar t, real vector c, real sca
 	// avar mvar inter cvar1 ... cvarK _cons | avar cvar1 ... cvarK _cons sigma2
 	//  1    2    3    .......nc......  nc+4 |  1   .......nc......  nc+2  nc+3
 
-	// offset for cox to compensate the lack of _cons in theta
+	// offset to compensate the lack of _cons in theta if yreg == "cox"
 	if (yreg=="cox") { 
 		offsetcox = -1
 	}
