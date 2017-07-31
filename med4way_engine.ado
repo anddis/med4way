@@ -255,43 +255,25 @@ program define med4way_engine, eclass
 	
 	
 ********************************************************************************
-*********** 4-way decomposition with delta method SE if needed *****************
+*********** 4-way decomposition with delta method / bootstrap SE ***************
 ********************************************************************************
-	// Step 1===================================================================
-	// Prepare output empty matrices
 	tempname bEstimates VEstimates
 
-	matrix `bEstimates' = J(1, `nn', 0)
-	matrix `VEstimates' = J(`nn', `nn', 0)
-		
+	// Estimation: delta method or bootstrap
+	if (("`deltamethod'" == "false") & ("`bootstrap'" == "false")) {
+		matrix `bEstimates' = J(1, `nn', 0)
+		matrix `VEstimates' = J(`nn', `nn', 0)
+	}
+	else {
+		mata: m4w_deriv(st_matrix("`betay'"),  st_matrix("`betam'"), /*
+			*/ st_matrix("`Vy'"), st_matrix("`Vm'"), /*
+			*/ st_matrix("`c'"), `nc', "`yreg'", "`mreg'", /*
+			*/ st_matrix("`aam'"), "`bootstrap'", "`output'")			
+	}
+	
 	matrix colnames `bEstimates' = `names'
 	matrix colnames `VEstimates' = `names'
 	matrix rownames `VEstimates' = `names'
-	//==========================================================================
-
-	// Step 2===================================================================
-	// Estimation: delta method or bootstrap
-	if (("`deltamethod'" == "true") & ("`bootstrap'" == "false")) {
-		foreach j of local names {
-			mata: m4w_deriv("`j'", st_matrix("`betay'"),  st_matrix("`betam'"), /*
-				*/ st_matrix("`Vy'"), st_matrix("`Vm'"), /*
-				*/ st_matrix("`c'"), `nc', "`yreg'", "`mreg'", /*
-				*/ st_matrix("`aam'"), "false")
-			matrix `bEstimates'[1, colnumb(`bEstimates', "`j'")] = `p_estimate'
-			matrix `VEstimates'[colnumb(`VEstimates', "`j'"), /*
-				*/ rownumb(`VEstimates', "`j'")] = `dm_variance'
-		}
-	}
-	else if (("`deltamethod'" == "false") & ("`bootstrap'" == "true")) {
-		foreach j of local names {
-			mata: m4w_deriv("`j'", st_matrix("`betay'"),  st_matrix("`betam'"), /*
-				*/ st_matrix("`Vy'"), st_matrix("`Vm'"), /*
-				*/ st_matrix("`c'"), `nc', "`yreg'", "`mreg'", /*
-				*/ st_matrix("`aam'"), "true")			
-			matrix `bEstimates'[1, colnumb(`bEstimates', "`j'")] = `p_estimate'
-		}
-	}
-	//==========================================================================
 ********************************************************************************
 	  	
 	ereturn post `bEstimates' `VEstimates'
@@ -365,68 +347,59 @@ end regressml
 * m4w_deriv (mata)
 **********************/
 clear mata
-mata: 
-mata set matastrict on 
+set matastrict on 
 
-void function m4w_deriv(string scalar t, real vector betay, real vector betam, /*
+mata: 
+void function m4w_deriv(real vector betay, real vector betam, /*
 					*/ real matrix Vy, real matrix Vm, real vector c, /* 
 					*/ real scalar nc, string scalar yreg, string scalar mreg, /*
-					*/ real vector aam, string scalar boot) {	
+					*/ real vector aam, string scalar boot, string scalar output) {	
 
-	real vector b
-	real matrix V 
-	real scalar p_estimate, dm_variance 
-	pointer p
+	real vector b, p_estimates
+	real matrix V, dm_variance
 	transmorphic D, G
 	
 	b = betay, betam
 	V = blockdiag(Vy, Vm)
-
-	p = findexternal("m4w_formulas()") // pointer!
 	
 	D = deriv_init()
-	deriv_init_evaluator(D, &m4w_eval())
+	deriv_init_evaluator(D, &m4w_formulas())
+	deriv_init_evaluatortype(D, "t")
 	deriv_init_params(D, b)
-	deriv_init_argument(D, 1, p)
-	deriv_init_argument(D, 2, t)
-	deriv_init_argument(D, 3, c)
-	deriv_init_argument(D, 4, nc)
-	deriv_init_argument(D, 5, yreg)
-	deriv_init_argument(D, 6, mreg)
-	deriv_init_argument(D, 7, aam)
+	deriv_init_argument(D, 1, c)
+	deriv_init_argument(D, 2, nc)
+	deriv_init_argument(D, 3, yreg)
+	deriv_init_argument(D, 4, mreg)
+	deriv_init_argument(D, 5, aam)
+	deriv_init_argument(D, 6, output)
 
-	p_estimate = deriv(D, 0)
-	st_local("p_estimate", strofreal(p_estimate))
+	m4w_formulas(b, c, nc, yreg, mreg, aam, output, p_estimates) // point estimates
+	// note: it's much faster to call directly m4w_formulas than deriv(D, 0) to get p_estimates 
 	
 	if (boot == "false") {
 		G = deriv(D, 1)
-		dm_variance = (G*V*G')
-		st_local("dm_variance", strofreal(dm_variance))
+		dm_variance = G*V*G'	// variance covariance matrix
 	}
-}
-
-
-/**********************
-* m4w_eval (mata)
-**********************/
-void m4w_eval(real vector b, pointer(real scalar function) scalar f, /*
-			*/ string scalar t, real vector c, real scalar nc, /*
-			*/ string scalar yreg, string scalar mreg, real vector aam, v) {
-	v = (*f)(b, t, c, nc, yreg, mreg, aam)
+	else if (boot == "true") {
+		dm_variance = J(cols(p_estimates), cols(p_estimates), 0)
+	}
+	
+	st_matrix(st_local("bEstimates"), p_estimates)
+	st_matrix(st_local("VEstimates"), dm_variance)
 }
 
 
 /**********************
 * m4w_formulas (mata)
 **********************/
-real scalar m4w_formulas(real vector b, string scalar t, real vector c, /*
+void m4w_formulas(real vector b, real vector c, /*
 					*/ real scalar nc, string scalar yreg, string scalar mreg, /*
-					*/ real vector aam) {
+					*/ real vector aam, string scalar output, v) {
 
-	real scalar offsetcox, i, betaTc, a0, a1, m, a1Ma0, a12Ma02, a1Tm, a0Tm, /*
+	real scalar offsetcox, betaTc, a0, a1, m, a1Ma0, a12Ma02, a1Tm, a0Tm, /*
 			*/ pie, intmed, intref, cde, A, B, te, ereri_cde, ereri_intref, /*
 			*/ ereri_intmed, ereri_pie, tereri
-	real vector theta, beta
+	real vector theta, beta, toreturn
 	
 
 	//--------------theta------------------- | -------------beta----------------
@@ -444,7 +417,7 @@ real scalar m4w_formulas(real vector b, string scalar t, real vector c, /*
 	// split b into beta and theta - this makes the formulas below easier to read
 	// especially because after this offsetcox is not needed anymore
 	theta = b[|1 \ 4+nc+offsetcox|] 		// outcome model
-	beta  = b[|5+nc+offsetcox \ cols(b)|] 	// mediator model
+	beta  = b[|5+nc+offsetcox \ .|] 		// mediator model
 
     if (nc>0) {
         betaTc = beta[|2 \ nc+1|]*c'		// linear combination covariates ("bcc" in vanderWeele)
@@ -481,41 +454,11 @@ real scalar m4w_formulas(real vector b, string scalar t, real vector c, /*
 		}
 		te = (cde + pie + intmed + intref)
 		
-		if (t == "cde") {
-			return(cde)
-		}
-		if (t == "intref") {
-			return(intref)
-		}
-		if (t == "intmed") {
-			return(intmed)
-		}
-		if (t == "pie") {
-			return(pie)
-		}
-		if (t == "te") {
-			return(te)
-		}
-		if (t == "p_cde") {
-			return(cde/te)
-		}
-		if (t == "p_intref") {
-			return(intref/te)
-		}
-		if (t == "p_intmed") {
-			return(intmed/te)
-		}
-		if (t == "p_pie") {
-			return(pie/te)
-		}
-		if (t == "op_m") {
-			return((pie+intmed)/te)
-		}
-		if (t == "op_ati") {
-			return((intref+intmed)/te)
-		}
-		if (t == "op_e") {
-			return(1-(cde/te))
+		toreturn = (te, cde, intref, intmed, pie)
+		if (output=="full") {
+//			toreturn = te cde intref intmed pie p_cde p_intref p_intmed p_pie op_m op_ati op_e
+//			always check that this order agrees with the one of the local macro `names'
+			toreturn = (toreturn, cde/te, intref/te, intmed/te, pie/te, (pie+intmed)/te, (intref+intmed)/te, 1-(cde/te))
 		}
 	}
 
@@ -546,45 +489,14 @@ real scalar m4w_formulas(real vector b, string scalar t, real vector c, /*
 			tereri = ((exp(theta[1]*a1)*(1+exp(beta[nc+2]+beta[1]*a0+betaTc))*(1+exp(beta[nc+2]+beta[1]*a1+betaTc+theta[2]+theta[3]*a1))/(exp(theta[1]*a0)*(1+exp(beta[nc+2]+beta[1]*a1+betaTc))*(1+exp(beta[nc+2]+beta[1]*a0+betaTc+theta[2]+theta[3]*a0))))-1)
 		}
 
-		if (t == "ereri_cde") {
-			return(ereri_cde)
-		}
-		if (t == "ereri_intref") {
-			return(ereri_intref)
-		}
-		if (t == "ereri_intmed") {
-			return(ereri_intmed)
-		}
-		if (t == "ereri_pie") {
-			return(ereri_pie)
-		}
-		if (t == "tereri") {
-			return(tereri)
-		}
-		if (t == "terira") {
-			return((tereri+1))
-		}
-		if (t == "p_cde") {
-			return(ereri_cde/tereri)
-		}
-		if (t == "p_intref") {
-			return(ereri_intref/tereri)
-		}
-		if (t == "p_intmed") {
-			return(ereri_intmed/tereri)
-		}
-		if (t == "p_pie") {
-			return(ereri_pie/tereri)
-		}
-		if (t == "op_m") {
-			return((ereri_pie+ereri_intmed)/tereri)
-		}
-		if (t == "op_ati") {
-			return((ereri_intref+ereri_intmed)/tereri)
-		}
-		if (t == "op_e") {
-			return(1-(ereri_cde/tereri))
+		toreturn = (tereri, ereri_cde, ereri_intref, ereri_intmed, ereri_pie)
+		if (output=="full") {
+// 			toreturn = tereri ereri_cde ereri_intref ereri_intmed ereri_pie terira p_cde p_intref p_intmed p_pie op_m op_ati op_e
+//			always check that this order agrees with the one of the local macro `names'
+			toreturn = (toreturn, (tereri+1), ereri_cde/tereri, ereri_intref/tereri, ereri_intmed/tereri, ereri_pie/tereri, (ereri_pie+ereri_intmed)/tereri, (ereri_intref+ereri_intmed)/tereri, 1-(ereri_cde/tereri))
 		}
 	}
+	
+	v = toreturn
 }
 end mata

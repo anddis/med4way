@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.1.1 28jul2017}{...}
+{* *! version 2.2.0 31jul2017}{...}
 
 {cmd:help med4way}
 {hline}
@@ -90,9 +90,9 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 {p 7 6 2}{opt logb:inomial}: logbinomial regression (GLM with binomial distribution and log link function){p_end}
 {p 7 6 2}{opt poi:sson}: Poisson regression{p_end}
 {p 7 6 2}{opt negb:inomial}: negative binomial regression{p_end}
-{p 7 6 2}{opt aft, {ul on}e{ul off}xponential}: Accelerated Failure Time (exponential survival distribution) ({cmd:stset} required){p_end}
-{p 7 6 2}{opt aft, {ul on}w{ul off}eibull}: Accelerated Failure Time (Weibull survival distribution) ({cmd:stset} required){p_end}
-{p 7 6 2}{opt cox}: Cox proportional hazards model ({cmd:stset} required){p_end}
+{p 7 6 2}{opt aft, {ul on}e{ul off}xponential}: Accelerated Failure Time (exponential survival distribution) ({helpb stset} required){p_end}
+{p 7 6 2}{opt aft, {ul on}w{ul off}eibull}: Accelerated Failure Time (Weibull survival distribution) ({helpb stset} required){p_end}
+{p 7 6 2}{opt cox}: Cox proportional hazards model ({helpb stset} required){p_end}
 
 {phang}
 {opt mreg(string)} specifies the form of the regression model for the mediator. The available forms are:
@@ -108,7 +108,7 @@ Example: the covariates specified are {it:cvar1 cvar2 cvar3} and the user wants 
 {opt casec:ontrol} specifies that the data comes from a case-control study (that is, sampling was done on the outcome).
 
 {phang}
-{opt full:output} specifies that, in addition to to the 4 components of the total effect (controlled direct effect, reference interaction, mediated interaction, pure indirect effect), the following quantities are to be estimated: the proportions of the total effect due to each of the 4 components, the overall proportion mediated, the overall proportion due to interaction, and the overall proportion that would be eliminated if the mediator {it:mvar} were fixed to the value {opt m(#)}. 
+{opt full:output} specifies that, in addition to the 4 components of the total effect (controlled direct effect, reference interaction, mediated interaction, pure indirect effect), the following quantities are to be estimated: the proportions of the total effect due to each of the 4 components, the overall proportion mediated, the overall proportion due to interaction, and the overall proportion that would be eliminated if the mediator {it:mvar} were fixed to the value {opt m(#)}. 
 
 {phang}
 {opt nodeltam:ethod} suppresses the calculation of the standard errors of the estimated quantities using the delta method.
@@ -164,8 +164,18 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 {pstd}Declare data to be survival-time data{p_end}
 {phang2}{stata stset y_cens, failure(fail) noshow}
 
+{pstd}Accelerated failure time regression model (exponential survival distribution) for the outcome; Logistic regression model for the mediator{p_end}
+{phang2}{stata med4way treat m_bin cvar1, a0(0) a1(1) m(0) yreg(aft, e) mreg(logistic) c(1)}
+
+{pstd}Test whether the excess relative risk due to controlled direct effect (ereri_cde) is statistically different from the excess relative risk due to pure indirect effect (ereri_pie){p_end}
+{phang2}{stata test _b[ereri_cde] = _b[ereri_pie]}{p_end}
+
+{pstd}Given the 4 basic components of the total effect, additional derived quantities can be estimated with the post-estimation commands {helpb lincom} or {helpb nlcom}, as appropriate.
+For example, to calculate the overall proportion mediated (op_m){p_end}
+{phang2}{stata nlcom (_b[ereri_pie]+_b[ereri_intmed])/(_b[ereri_cde]+_b[ereri_intref]+_b[ereri_intmed]+_b[ereri_pie]), noheader}{p_end}
+
 {pstd}Accelerated failure time regression model (exponential survival distribution) for the outcome; Logistic regression model for the mediator; Display full output{p_end}
-{phang2}{stata med4way treat m_bin cvar1, a0(0) a1(1) m(0) yreg(aft, e) mreg(logistic) c(1) fulloutput}
+{phang2}{stata med4way treat m_bin cvar1, a0(0) a1(1) m(0) yreg(aft, e) mreg(logistic) c(1) fulloutput}{p_end}
 
 
 {title:Stored results}

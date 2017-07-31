@@ -1,8 +1,9 @@
 *! Hello, I'm med4way.ado
-*! v2.1.1 - 28jul2017
+*! v2.2.0 - 31jul2017
 
 /* 
 Previous versions:
+v2.1.1 - 28jul2017
 v2.1.0 - 26jul2017
 v2.0.0 - 27mar2017
 */
