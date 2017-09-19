@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.2.0 31jul2017}{...}
+{* *! version 2.2.1 19sep2017}{...}
 
 {cmd:help med4way}
 {hline}
@@ -15,9 +15,7 @@
 
 {p 8 13 2}
 {cmd:med4way} [{it:yvar}] {it:avar} {it:mvar} [{it:cvars}] {ifin}, {opt a0(#)} {opt a1(#)} {opt m(#)} 
-	{opt yreg(string)} {opt mreg(string)} [{opth c(string)}
-	{opt casec:ontrol} {opt full:output} {opt nodeltam:ethod} {opt robust} {opt level(#)} 
-	{opt boot:strap} {opt reps(#)} {opt seed(#)} {bf:{ul:sa}ving(}{it:filename}{bf:, ...)} {opt bca}]
+	{opt yreg(string)} {opt mreg(string)} [ {it:options} ]
 
 
 {phang}
@@ -47,7 +45,10 @@
 {synopt :{opt full:output}}compute also the proportion of the Total Effect attributable to its 4 components and the proportions attributable to mediation, interaction, and either mediation or interaction or both{p_end}
 {synopt :{opt nodeltam:ethod}}suppress the calculation of the standard errors using the delta method{p_end}
 {synopt :{opt robust}}use the sandwich/robust estimator of variance when using a Poisson model for the outcome{p_end}
+
 {synopt :{opt level(#)}}set confidence level; default is {cmd:level(95)}{p_end}
+{synopt :{it:display_options}}control formatting{p_end}
+{synopt :{opt coef:legend}}display legend instead of statistics{p_end}
 
 {synopt :{opt boot:strap}}use bootstrap to calculate confidence intervals{p_end}
 {synopt :{opt reps(#)}}perform # bootstrap replications; default is {cmd: reps(1000)}{p_end}
@@ -120,7 +121,14 @@ Example: the covariates specified are {it:cvar1 cvar2 cvar3} and the user wants 
 {opt level(#)}; see {helpb estimation options##level():[R] estimation options}.
 
 {phang}
-{opt boot:strap} uses the bootstrap to calculate confidence intervals (CIs). By default, bias-corrected CIs are calculated. Normal-based and percentile CIs can be obtained with the post-estimation command {helpb estat bootstrap}.
+{it:display_options}: {opt noci}, {opt nopv:alues}, {bf:cformat(}%fmt{bf:)}, {bf:pformat(}%fmt{bf:)}; see {helpb estimation options##coeflegend:[R] estimation options}.
+
+{phang}
+{opt coeflegend}; see
+     {helpb estimation options##coeflegend:[R] estimation options}.
+
+{phang}
+{opt boot:strap} uses the bootstrap to calculate confidence intervals (CIs). By default, normal-based CIs are calculated. Bias-corrected and percentile CIs can be obtained with the post-estimation command {helpb estat bootstrap}.
 
 {phang}
 {opt reps(#)} specifies the number of bootstrap replications to be performed. The default is 1,000.
@@ -167,6 +175,9 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 {pstd}Accelerated failure time regression model (exponential survival distribution) for the outcome; Logistic regression model for the mediator{p_end}
 {phang2}{stata med4way treat m_bin cvar1, a0(0) a1(1) m(0) yreg(aft, e) mreg(logistic) c(1)}
 
+{pstd}Show the legend of the coefficients{p_end}
+{phang2}{stata med4way, coeflegend}
+
 {pstd}Test whether the excess relative risk due to controlled direct effect (ereri_cde) is statistically different from the excess relative risk due to pure indirect effect (ereri_pie){p_end}
 {phang2}{stata test _b[ereri_cde] = _b[ereri_pie]}{p_end}
 
@@ -185,6 +196,7 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 
 {synoptset 20 tabbed}{...}
 {p2col 5 15 19 2: Scalars}{p_end}
+{synopt:{cmd:e(N)}}number of observations{p_end}
 {synopt:{cmd:e(a0)}}referent treatment level{p_end}
 {synopt:{cmd:e(a1)}}actual treatment level{p_end}
 {synopt:{cmd:e(m)}}level of the mediator used for the 4-way decomposition{p_end}
@@ -203,6 +215,8 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 {synopt:{cmd:e(mreg)}}form of the regression model for the mediator{p_end}
 {synopt:{cmd:e(estimands)}}acronyms of the estimated quantities{p_end}
 {p2coldent: * {cmd:e(prefix)}}{cmd:bootstrap}{p_end}
+{p2coldent: * {cmd:e(vce)}}{cmd:bootstrap}{p_end}
+{p2coldent: * {cmd:e(vcetype)}}{cmd:Bootstrap}{p_end}
 {synopt:{cmd:e(properties)}}{cmd:b V}{p_end}
 
 {synoptset 20 tabbed}{...}
@@ -220,6 +234,11 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 {p2coldent: * {cmd:e(ci_percentile)}}percentile CIs{p_end}
 {p2coldent: * {cmd:e(ci_bc)}}bias-corrected CIs{p_end}
 {p2coldent: * {cmd:e(ci_bca)}}bias-corrected and accelerated CIs{p_end}
+{p2coldent: * {cmd:e(V_modelbased)}}model-based variance{p_end}
+
+{synoptset 20 tabbed}{...}
+{p2col 5 15 19 2: Functions}{p_end}
+{synopt:{cmd:e(sample)}}marks estimation sample{p_end}
 
 {p 4 6 2}* are stored only if the option {opt bootstrap} is specified.{p_end}
 

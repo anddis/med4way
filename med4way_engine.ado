@@ -276,7 +276,7 @@ program define med4way_engine, eclass
 	matrix rownames `VEstimates' = `names'
 ********************************************************************************
 	  	
-	ereturn post `bEstimates' `VEstimates'
+	ereturn post `bEstimates' `VEstimates', esample(`touse')
 	
 	ereturn local names = "`names'"
 	ereturn scalar nnames = `nn'

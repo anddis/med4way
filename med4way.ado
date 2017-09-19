@@ -1,8 +1,9 @@
 *! Hello, I'm med4way.ado
-*! v2.2.0 - 31jul2017
+*! v2.2.1 - 19sep2017
 
 /* 
 Previous versions:
+v2.2.0 - 31jul2017
 v2.1.1 - 28jul2017
 v2.1.0 - 26jul2017
 v2.0.0 - 27mar2017
@@ -15,7 +16,7 @@ program define med4way, eclass
 	if replay() {
 		if ("`e(cmd)'" != "med4way") error 301
 		
-		ereturn display
+		Display `0'
 		exit
 	}
 
@@ -39,7 +40,7 @@ program define med4way, eclass
 	*/ reps(integer 1000) /*
 	*/ seed(passthru) /*
 	*/ SAving(passthru) /*
-	*/ BCA ]
+	*/ BCA  * ]
 		
 	//[if] [in] marksample
 	marksample touse
@@ -50,6 +51,9 @@ program define med4way, eclass
 		// initialize wrnngtxt local. The idea behind wrnngtxt is
 		// that, in case of Error in Step 1, no Warnng msgs are issued. 
 		// Plus, it is possible to customize the order of the warnngs
+
+	//parse dioptions
+	_get_diopts diopts, `options'
 
 	//parse yreg
 	gettoken yregx yreg : yreg, parse(",")
@@ -328,6 +332,10 @@ program define med4way, eclass
 	}
 		
 	local nnames : word count `names'
+
+	// Count observations is touse
+	qui count if `touse'
+	local nobs = r(N)
 	//==========================================================================	
 	
 	// Step 2===================================================================
@@ -349,7 +357,7 @@ program define med4way, eclass
 					*/ "the data was stset correctly."
 			}
 			if `w' == 4 {
-				display as error "Warning: no covariates specified via cvars(varlist)."
+				display as error "Warning: no covariates specified."
 			}
 			if `w' == 5 {
 				display as error "Warning: fixed values for the covariates `cvar' " /*
@@ -399,15 +407,22 @@ program define med4way, eclass
 
 	if "`deltamethod'" == "true" {
 		display _n(2) as text "-> 4-way decomposition: delta method" _n(1)
-		ereturn display, level(`level')
+		ereturn display, level(`level') `diopts'
 	}
 	//==========================================================================	
 
 	// Step 4===================================================================	
 	// Bootstrap (if desired)
 	if "`bootstrap'" == "true" {
-		qui bootstrap _b, reps(`reps') level(`level') `seed' `saving' nodots /*
-			*/ level(`level') `bca': /*
+		if "`deltamethod'" == "true" { // if deltamethod, store the modelbased V for future ereturn
+			tempname V_modelbased
+			mat `V_modelbased' = e(V)
+		} 
+		
+		display _n(2) as text "-> 4-way decomposition: bootstrap" _n(1)
+
+		bootstrap _b, reps(`reps') level(`level') `seed' `saving' nodots /*
+			*/ level(`level') `bca' noh nol `diopts': /*
 				*/ med4way_engine if `touse', /*
 				*/ yvar(`yvar') avar(`avar') mvar(`mvar') /*
 				*/ cvar(`cvar')  c(`cmatrix') nc(`nc') inter(`inter') /*
@@ -416,8 +431,6 @@ program define med4way, eclass
 				*/ deltamethod(false)  bootstrap(true) `robust' /*
 				*/ names(`names') nn(`nnames') level(`level')
 	
-		display _n(2) as text "-> 4-way decomposition: bootstrap" _n(1)
-
 		tempname b_bs repsm bias z0 se ci_normal ci_percentile ci_bc 
 		matrix `b_bs' = e(b_bs)
 		matrix `repsm' = e(reps)
@@ -433,7 +446,7 @@ program define med4way, eclass
 			matrix `accel' = e(accel)
 		}
 		
-		estat bootstrap, noheader `bca'
+		*estat bootstrap, noheader `bca'
 	}
 	//==========================================================================	
 
@@ -468,7 +481,7 @@ program define med4way, eclass
 	tempname b V
 	matrix `b' = e(b)
 	matrix `V' = e(V)
-	ereturn post `b' `V'
+	ereturn post `b' `V', esample(`touse') obs(`nobs')
 	
 	ereturn local estimands = "`names'"
 	
@@ -489,9 +502,14 @@ program define med4way, eclass
 	if "`bootstrap'"=="true" {
 		ereturn scalar N_reps = `reps'
 		ereturn local prefix = "bootstrap"
-		
+		ereturn local vcetype = "Bootstrap"
+		ereturn local vce = "bootstrap"
+
 		if "`bca'" == "bca" {
 			ereturn matrix ci_bca = `ci_bca'
+		}
+		if "`deltamethod'" == "true" {
+			ereturn matrix V_modelbased = `V_modelbased'
 		}
 		ereturn matrix ci_bc = `ci_bc'
 		ereturn matrix ci_percentile = `ci_percentile'
@@ -527,6 +545,7 @@ end med4way
 **********************/
 capture program drop validate_c
 program define validate_c, rclass
+	version 10.0
 	syntax [if], [c(string) cvars(string)] wrnngtxt(numlist)
 	//if c is missing, take the mean for all the variables in cvars
 	//if c is not missing, is the number of elements in c = to the number of elements in cvars? If no, issue error.
@@ -607,16 +626,18 @@ program define validate_c, rclass
 	c_local wrnngtxt `wrnngtxt' 
 	
 	tempname cmatrix // c needs to be a matrix to pass it on to mata -> dump c into cmatrix
-	if `nc' > 0 {
-		local s = 1
-		foreach i of local c   {
-			if `s++' == 1 mat `cmatrix' = `i'
-			else mat `cmatrix' = (`cmatrix' , `i')
-		}
-	}
-	else {
-		mat `cmatrix' = .
-	}
+	mata: st_matrix("`cmatrix'", strtoreal(tokens(st_local("c"))))
 	
 	return mat cmatrix = `cmatrix'
 end validate_c 
+
+
+capture program drop Display
+program define Display
+	version 10.0
+	syntax [, Level(cilevel) *]
+	_get_diopts diopts options , `options'
+	
+	_prefix_display, nohead level(`level') `diopts'
+end Display
+
