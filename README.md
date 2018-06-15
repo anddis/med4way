@@ -1,8 +1,8 @@
 # med4way
 ### A Stata command for the 4-way decomposition using parametric regression models
 
-- Current version: `2.2.1` 
-- Release date: `19sep2017`
+- Current version: `2.2.2` 
+- Release date: `14jun2018`
 
 ---
 
@@ -21,13 +21,13 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 
 - To install the current version of `med4way` directly from GitHub, run:
 ```Stata
-net install med4way, from("https://raw.githubusercontent.com/anddis/med4way/master/")
-```
+net install med4way, from("https://raw.githubusercontent.com/anddis/med4way/master/") replace
+``` 
 from within a web-aware Stata (version 13+).
 
 - For older versions of Stata, download and extract the [zip file](https://github.com/anddis/med4way/archive/master.zip) and then run:
 ```Stata
-net install med4way, from(mydir)
+net install med4way, from(mydir) replace 
 ```
 from within Stata, where *mydir* is the directory that containes the extracted files.
 

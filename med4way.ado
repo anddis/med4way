@@ -1,8 +1,9 @@
 *! Hello, I'm med4way.ado
-*! v2.2.1 - 19sep2017
+*! v2.2.2 - 14jun2018
 
 /* 
 Previous versions:
+v2.2.1 - 19sep2017
 v2.2.0 - 31jul2017
 v2.1.1 - 28jul2017
 v2.1.0 - 26jul2017
@@ -56,27 +57,15 @@ program define med4way, eclass
 	_get_diopts diopts, `options'
 
 	//parse yreg
-	gettoken yregx yreg : yreg, parse(",")
-	gettoken comma yreg : yreg
-	if length("`comma'") > 1 {
-		local 0 = substr("`comma'",2,.) + "`opt'"
- 		local comma = substr("`comma'", 1, 1)
-	}
-	gettoken dist opt : yreg
+	gettoken yreg_1 yreg_2 : yreg, parse(",")
+	gettoken comma opt : yreg_2,   parse(",")
+// 	if length("`comma'") > 1 { unnecessary
+//  		local comma = trim("`comma'")
+// 	}
 	
-	local yregx = trim(`"`yregx'"')
-    local opt = trim(`"`opt'"')
-	if `"`yregx'"'!="" & `"`opt'"'=="" {
-		if `"`comma'"'=="" | (`"`comma'"'=="," & `"`dist'"'=="") {
-			local yreg `"`yregx'"'
-			local dist ""   
-		}
-		
-		if `"`comma'"'=="," & `"`dist'"'!="" {
-			 local yreg `"`yregx'"'
-			 local dist `"`dist'"'	
-		}
-	}
+	local yreg = trim(`"`yreg_1'"')
+    local dist = trim(`"`opt'"')
+
 	
 	local l = length("`yreg'")
 	if substr("linear", 1, max(3,`l')) == "`yreg'" {
@@ -263,7 +252,7 @@ program define med4way, eclass
 			local wrnngtxt `wrnngtxt' 2
 		}
 		else {
-			qui logit `yvar' if `touse'
+			qui logit_10 `yvar' if `touse'
 			local prev = invlogit(_b[_cons])*100
 			if `prev' > 10 {
 				local wrnngtxt `wrnngtxt' 1
@@ -300,7 +289,7 @@ program define med4way, eclass
 			continue, break
 		}
 	}
-	//all the 8 suggested names have been used by existing variables, give an error message
+	//all the 8 suggested names have been used by existing variables, throw an error message
 	if _rc {
 		display as error "Error: The command needs to create an interaction variable " /*
 			*/ "with one of the following names: `inter_var_names', " /*
@@ -377,7 +366,7 @@ program define med4way, eclass
 	}
 	
 	display _n(1) as text "-> Summary" _n(1)
-	display _col(4) as text "Outcome    (yvar):"  _col(24) as res "`=cond("`survoutcome'"=="true", "[ survival outcome ]", "`yvar'")'"
+	display _col(4) as text "Outcome    (yvar):"  _col(24) as res "`=cond("`survoutcome'"=="true", "_t", "`yvar'")'"
 	display _col(4) as text "Treatment  (avar):"  _col(24) as res "`avar'"
 	display _col(4) as text "Mediator   (mvar):"  _col(24) as res "`mvar'"
 	display _col(4) as text "Covariates (cvars):" _col(24) as res "`=cond(`nc'==0, "[ none ]", "`cvar'")'" _n(1)
@@ -499,7 +488,7 @@ program define med4way, eclass
 	ereturn scalar a1 = `a1'
 	ereturn scalar m = `m'
 
-	if "`bootstrap'"=="true" {
+	if "`bootstrap'"=="true" { // bootstrap stuff
 		ereturn scalar N_reps = `reps'
 		ereturn local prefix = "bootstrap"
 		ereturn local vcetype = "Bootstrap"
@@ -523,6 +512,7 @@ program define med4way, eclass
 		}
 		ereturn matrix b_bs = `b_bs'	
 	}
+	
 	if `nc' > 0	{
 		ereturn matrix c = `cmatrix'
 	}
