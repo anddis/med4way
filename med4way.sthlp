@@ -245,15 +245,16 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 
 {title:References}
 
+{phang}Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L., 2018. Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition. International Journal of Epidemiology.
+
 {phang}VanderWeele, T.J., 2014. A unification of mediation and interaction: a 4-way decomposition. Epidemiology (Cambridge, Mass.), 25(5), p.749.
 
 
 {title:Authors}
 
-{pstd}Andrea Discacciati [1], Andrea Bellavia [2,3], Linda Valeri [4,5]{p_end}
+{pstd}Andrea Discacciati [1], Andrea Bellavia [2,3], Linda Valeri [4]{p_end}
 
 {pstd}[1] {it:Unit of Biostatistics, Karolinska Institutet, Stockholm, Sweden}{p_end}
-{pstd}[2] {it:Department of Environmental Health, Harvard T.H. Chan School of Public Health, Boston, MA}{p_end}
-{pstd}[3] {it:Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA}{p_end}
-{pstd}[4] {it:Department of Psychiatry, Harvard Medical School, Boston, MA}{p_end}
-{pstd}[5] {it:Psychiatric Biostatistics Laboratory, McLean Hospital, Belmont, MA}{p_end}
+{pstd}[2] {it:Department of Environmental Health, Harvard T.H. Chan School of Public Health, Boston, MA, USA}{p_end}
+{pstd}[3] {it:Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA}{p_end}
+{pstd}[4] {it:Department of Biostatistics, Columbia University Mailman School of Public Health, New York, NY, USA}{p_end}
