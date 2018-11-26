@@ -1,8 +1,9 @@
 *! Hello, I'm med4way.ado
-*! v2.2.2 - 14jun2018
+*! v2.2.3 - 25nov2018
 
 /* 
 Previous versions:
+v2.2.2 - 14jun2018
 v2.2.1 - 19sep2017
 v2.2.0 - 31jul2017
 v2.1.1 - 28jul2017
@@ -244,6 +245,13 @@ program define med4way, eclass
 		if `loax' == 0 {
 			local wrnngtxt `wrnngtxt' 7
 		}
+	}
+	
+	//casecontrol works only with yreg logistic
+	if ("`casecontrol'"=="true") & !("`yreg'"=="logistic") {
+		display as error "Error: option casecontrol can only be specified together with a " /*
+			*/ "logistic regression model for the outcome (yreg)."
+			error 198
 	}
 	
 	//validate rare outcome
@@ -615,9 +623,13 @@ program define validate_c, rclass
 // 	c_local eretc "`c'"		// c used in med4way's ereturn
 	c_local wrnngtxt `wrnngtxt' 
 	
+	mata: st_local("c_missing", strofreal(hasmissing(strtoreal(tokens(st_local("c")))))) // check that there are no missing values in c. It happens for example if c() contains strings.
+	if (`c_missing' == 1) {
+		di as error "Error: please, check the option c(). It must contain only numbers and/or dots (.)"
+		error 198
+	}
 	tempname cmatrix // c needs to be a matrix to pass it on to mata -> dump c into cmatrix
 	mata: st_matrix("`cmatrix'", strtoreal(tokens(st_local("c"))))
-	
 	return mat cmatrix = `cmatrix'
 end validate_c 
 

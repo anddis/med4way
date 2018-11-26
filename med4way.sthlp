@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.2.2 14jun2018}{...}
+{* *! version 2.2.3 25nov2018}{...}
 
 {cmd:help med4way}
 {hline}
@@ -91,22 +91,22 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 {p 7 6 2}{opt logb:inomial}: logbinomial regression (GLM with binomial distribution and log link function){p_end}
 {p 7 6 2}{opt poi:sson}: Poisson regression{p_end}
 {p 7 6 2}{opt negb:inomial}: negative binomial regression{p_end}
-{p 7 6 2}{opt aft, {ul on}e{ul off}xponential}: Accelerated Failure Time (exponential survival distribution) ({helpb stset} required){p_end}
-{p 7 6 2}{opt aft, {ul on}w{ul off}eibull}: Accelerated Failure Time (Weibull survival distribution) ({helpb stset} required){p_end}
-{p 7 6 2}{opt cox}: Cox proportional hazards model ({helpb stset} required){p_end}
+{p 7 6 2}{opt aft, {ul on}e{ul off}xponential}: Accelerated Failure Time regression (exponential distribution) ({helpb stset} required){p_end}
+{p 7 6 2}{opt aft, {ul on}w{ul off}eibull}: Accelerated Failure Time regression (Weibull distribution) ({helpb stset} required){p_end}
+{p 7 6 2}{opt cox}: Cox proportional hazards regression ({helpb stset} required){p_end}
 
 {phang}
 {opt mreg(string)} specifies the form of the regression model for the mediator. The available forms are:
 
 {p 7 6 2}{opt lin:ear}: linear regression{p_end}
-{p 7 6 2}{opt logi:stic}: logistic regression regression{p_end}
+{p 7 6 2}{opt logi:stic}: logistic regression{p_end}
 
 {phang}
 {opt c(string)} fixes the values of the covariates {it:cvars} at which to compute the 4-way decomposition. If {it:cvars} are specified but this option is omitted, {it:cvars} will be automatically fixed at their respective mean values. If this option is specified, the number of values of {opt c(numlist)} must correspond to the number of {it:cvars}. A dot (.) can be used to fix the value of a specific covariate to its mean. 
 Example: the covariates specified are {it:cvar1 cvar2 cvar3} and the user wants to fix the value for {it:cvar2} to 6, while letting the values for {it:cvar1} and {it:cvar3} to be equal to their respective means. This can be achieved with the option {opt c(. 6 .)}.
 
 {phang}
-{opt casec:ontrol} specifies that the data comes from a case-control study (that is, sampling was done on the outcome).
+{opt casec:ontrol} specifies that the data comes from a case-control study (that is, sampling was done on the outcome). This option can be specified only together with a logistic regression model for the outcome.
 
 {phang}
 {opt full:output} specifies that, in addition to the 4 components of the total effect (controlled direct effect, reference interaction, mediated interaction, pure indirect effect), the following quantities are to be estimated: the proportions of the total effect due to each of the 4 components, the overall proportion mediated, the overall proportion due to interaction, and the overall proportion that would be eliminated if the mediator {it:mvar} were fixed to the value {opt m(#)}. 
@@ -245,7 +245,7 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 
 {title:References}
 
-{phang}Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L., 2018. Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition. International Journal of Epidemiology.
+{phang}Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L., 2018. Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition. International Journal of Epidemiology. doi: 10.1093/ije/dyy236
 
 {phang}VanderWeele, T.J., 2014. A unification of mediation and interaction: a 4-way decomposition. Epidemiology (Cambridge, Mass.), 25(5), p.749.
 

@@ -21,236 +21,65 @@ program define med4way_engine, eclass
 	local titlem `"_n(2) as text "-> Model for the mediator""'
 	
 	tempname Vy betay Vm betam
-		
-	// Each block is a combination of a different yreg/mreg. There are 7 yreg
-	// and 2 mreg = 14 blocks in total
 	
-	// Block 1: yreg=linear, mreg=linear
-	if (("`yreg'"=="linear") & ("`mreg'"=="linear")) {
-		display `titley'
+	// Models for the outcome (7)
+	display `titley'
+	if ("`yreg'"=="linear") { // 1 linear
 		regress `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-		
-		display `titlem'
-		regress `mvar' `avar' `cvar' if `touse', level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 1
-	
-	// Block 2: yreg=linear, mreg=logistic
-	else if (("`yreg'"=="linear") & ("`mreg'"=="logistic")) {
-		display `titley'
-		regress `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-
-		display `titlem'
-		logit `mvar' `avar' `cvar' if `touse', level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 2
-	
-	// Block 3: yreg=logistic, mreg=linear
-	else if (("`yreg'"=="logistic") & ("`mreg'"=="linear")) {
-		display `titley'
+	}
+	else if ("`yreg'"=="logistic") { // 2 logit
 		logit `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
+	}
+	else if ("`yreg'"=="cox") {	// 3 cox
+		stcox `avar' `mvar' `inter' `cvar' if `touse', level(`level')
+	}
+	else if ("`yreg'"=="aft") { // 4 aft
+		streg `avar' `mvar' `inter' `cvar' if `touse', time dist(`dist') level(`level')
+	}
+	else if ("`yreg'"=="logbinomial") { // 5 logbinomial
+		glm `yvar' `avar' `mvar' `inter' `cvar' if `touse', family(binomial) /*
+			*/ link(log) irls level(`level') vce(oim)
+	}
+	else if ("`yreg'"=="poisson") { // 6 poisson
+		poisson `yvar' `avar' `mvar' `inter' `cvar' if `touse', `robust' level(`level')
+	}
+	else if ("`yreg'"=="negbinomial") { // 7 negbinomial
+		nbreg `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
+	}
 	
-		display `titlem'
-		if "`casecontrol'"=="true" {
+	// Store e(b) and e(V) for the model for the outcome
+	matrix `Vy' = e(V)
+	matrix `betay' = e(b)
+	if ((("`yreg'"=="aft") & ("`dist'"=="weibull")) | ("`yreg'"=="negbinomial")) { // drop ancillary parameters (move to m4w_deriv?)
+		matrix `Vy' = `Vy'[1..colsof(`Vy')-1, 1..colsof(`Vy')-1]
+		matrix `betay' = `betay'[1, 1..colsof(`betay')-1]
+	}	
+	
+	// Models for the mediator (2)
+	display `titlem'
+	if ("`mreg'"=="linear") { // 1 linear
+		if ("`casecontrol'"=="true") {
 			regressml `mvar' `avar' `cvar' if `yvar' == 0 & `touse', /*
 				*/ onlybeta(`bootstrap') level(`level')
 		}
-		else if "`casecontrol'"=="false" {
+		else if ("`casecontrol'"=="false") {
 			regressml `mvar' `avar' `cvar' if `touse', /*
 				*/ onlybeta(`bootstrap') level(`level')
 		}
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 3
-	
-	// Block 4: yreg=logistic, mreg=linear
-	else if (("`yreg'"=="logistic") & ("`mreg'"=="logistic")) {
-		display `titley'
-		logit `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-	
-		display `titlem'
-		if "`casecontrol'"=="true" {
+	}
+	else if ("`mreg'"=="logistic") { // 2 logit
+		if ("`casecontrol'"=="true") {
 			logit `mvar' `avar' `cvar' if `yvar' == 0 & `touse', level(`level')
 		}
-		else if "`casecontrol'"=="false" {
+		else if ("`casecontrol'"=="false") {
 			logit `mvar' `avar' `cvar' if `touse', level(`level')
 		}
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 4
+	}
 	
-	// Block 5: yreg=cox, mreg=linear
-	else if (("`yreg'"=="cox") & ("`mreg'"=="linear")) {
-		display `titley'
-		stcox `avar' `mvar' `inter' `cvar' if `touse', level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-	
-		display `titlem'
-		regressml `mvar' `avar' `cvar' if `touse', /*
-			*/ onlybeta(`bootstrap') level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 5
-	
-	// Block 6: yreg=cox, mreg=logistic
-	else if (("`yreg'"=="cox") & ("`mreg'"=="logistic")) {
-		display `titley'
-		stcox `avar' `mvar' `inter' `cvar' if `touse', nohr level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-	
-		display `titlem'
-		logit `mvar' `avar' `cvar' if `touse', level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 6
-	
-	// Block 7: yreg=aft, mreg=linear
-	else if (("`yreg'"=="aft") & ("`mreg'"=="linear")) {
-		display `titley'
-		streg `avar' `mvar' `inter' `cvar' if `touse', time dist(`dist') level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-		if "`dist'"=="weibull" { // drop ancillary parameters
-			matrix `Vy' = `Vy'[1..colsof(`Vy')-1, 1..colsof(`Vy')-1]
-			matrix `betay' = `betay'[1, 1..colsof(`betay')-1]
-		}
+	// Store e(b) and e(V) for the model for the mediator
+	matrix `Vm' = e(V)
+	matrix `betam' = e(b)
 		
-		display `titlem'
-		regressml `mvar' `avar' `cvar' if `touse', /*
-			*/ onlybeta(`bootstrap') level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 7
-	
-	// Block 8: yreg=aft, mreg=logistic
-	else if (("`yreg'"=="aft") & ("`mreg'"=="logistic")) {
-		display `titley'
-		streg `avar' `mvar' `inter' `cvar' if `touse', time dist(`dist') level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-		if "`dist'"=="weibull" { // drop ancillary parameters
-			matrix `Vy' = `Vy'[1..colsof(`Vy')-1, 1..colsof(`Vy')-1]
-			matrix `betay' = `betay'[1, 1..colsof(`betay')-1]
-		}
-	
-		display `titlem'
-		logit `mvar' `avar' `cvar' if `touse', level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 8
-	
-	// Block 9: yreg=logbinomial, mreg=linear
-	else if (("`yreg'"=="logbinomial") & ("`mreg'"=="linear")) {
-		display `titley'
-		glm `yvar' `avar' `mvar' `inter' `cvar' if `touse', family(binomial) /*
-			*/ link(log) ml level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-	
-		display `titlem'
-		regressml `mvar' `avar' `cvar' if `touse', /*
-			*/ onlybeta(`bootstrap') level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 9
-	
-	// Block 10: yreg=logbinomial, mreg=logistic
-	else if (("`yreg'"=="logbinomial") & ("`mreg'"=="logistic")) {
-		display `titley'
-		glm `yvar' `avar' `mvar' `inter' `cvar' if `touse', family(binomial) /*
-			*/ link(log) ml level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-	
-		display `titlem'
-		logit `mvar' `avar' `cvar' if `touse', level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 10
-	
-	// Block 11: yreg=poisson, mreg=linear
-	else if (("`yreg'"=="poisson") & ("`mreg'"=="linear")) {
-		display `titley'
-		poisson `yvar' `avar' `mvar' `inter' `cvar' if `touse', `robust' level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-	
-		display `titlem'
-		regressml `mvar' `avar' `cvar' if `touse', /*
-			*/ onlybeta(`bootstrap') level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 11
-	
-	// Block 12: yreg=poisson, mreg=logistic
-	else if (("`yreg'"=="poisson") & ("`mreg'"=="logistic")) {
-		display `titley'
-		poisson `yvar' `avar' `mvar' `inter' `cvar' if `touse', `robust' level(`level')
-		matrix `Vy' = e(V)
-		matrix `betay' = e(b)
-	
-		display `titlem'
-		logit `mvar' `avar' `cvar' if `touse', level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 12
-	
-	 // Block 13: yreg=negbinomial, mreg=linear
-	else if (("`yreg'"=="negbinomial") & ("`mreg'"=="linear")) {
-		display `titley'
-		nbreg `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
-		matrix `Vy' = e(V)
-		matrix `Vy' = `Vy'[1..colsof(`Vy')-1, 1..colsof(`Vy')-1] // drop ancillary parameters
-		matrix `betay' = e(b)
-		matrix `betay' = `betay'[1, 1..colsof(`betay')-1] // drop ancillary parameters
-	
-		display `titlem'
-		regressml `mvar' `avar' `cvar' if `touse', /*
-			*/ onlybeta(`bootstrap') level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 13
-	
-	// Block 14: yreg=negbinomial, mreg=logistic
-	else if (("`yreg'"=="negbinomial") & ("`mreg'"=="logistic")) {
-		display `titley'
-		nbreg `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
-		matrix `Vy' = e(V)
-		matrix `Vy' = `Vy'[1..colsof(`Vy')-1, 1..colsof(`Vy')-1] // drop ancillary parameters
-		matrix `betay' = e(b)
-		matrix `betay' = `betay'[1, 1..colsof(`betay')-1] // drop ancillary parameters
-	
-		display `titlem'
-		logit `mvar' `avar' `cvar' if `touse', level(`level')
-		matrix `Vm' = e(V)
-		matrix `betam' = e(b)
-	}	
-	// End of Block 14
 ********************************************************************************
 	
 	
@@ -304,7 +133,7 @@ program define regressml, eclass
 	
 	marksample touse
 	
-	if "`onlybeta'" == "" local onlybeta "false"
+	if ("`onlybeta'" == "") local onlybeta "false"
 	
 	gettoken dep indep: varlist
 	
@@ -314,7 +143,7 @@ program define regressml, eclass
 	matrix colnames `sigma2reg' = "sigma2:_cons"
 	local nm = e(N)
 
-	if "`onlybeta'"=="false" {
+	if ("`onlybeta'"=="false") {
 		tempname breg
 		matrix `breg' = e(b)
 		matrix coleq `breg' = "mu"
@@ -326,11 +155,11 @@ program define regressml, eclass
 	}
 	
 	tempname bML VML
-	if "`onlybeta'" =="false" {
+	if ("`onlybeta'" =="false") {
 		matrix `bML' = e(b)
 		matrix `VML' = e(V)	
 	}
-	else if "`onlybeta'"== "true" {
+	else if ("`onlybeta'"== "true") {
 		matrix `bML' = e(b), `sigma2reg'
 		matrix `VML' = J(colsof(e(b))+1, colsof(e(b))+1, 0)
 		
@@ -392,7 +221,7 @@ void function m4w_deriv(real vector betay, real vector betam, /*
 /**********************
 * m4w_formulas (mata)
 **********************/
-void m4w_formulas(real vector b, real vector c, /*
+void function m4w_formulas(real vector b, real vector c, /*
 					*/ real scalar nc, string scalar yreg, string scalar mreg, /*
 					*/ real vector aam, string scalar output, v) {
 
