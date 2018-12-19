@@ -34,7 +34,7 @@ program define med4way, eclass
 	*/ CASEControl /*
 	*/ FULLoutput /*
 	*/ NODELTAMethod /*
-	*/ ROBUST /*
+	*/ ROBUST /* undocumented
 	*/ NOLEGEND /* undocumented
 	*/ NOWARNing /* undocumented
 	*/ level(cilevel) /*
@@ -42,6 +42,9 @@ program define med4way, eclass
 	*/ reps(integer 1000) /*
 	*/ seed(passthru) /*
 	*/ SAving(passthru) /*
+	*/ YREGOPTions(passthru) /*
+	*/ MREGOPTions(passthru) /*
+	*/ ESTSTOre /* undocumented?
 	*/ BCA  * ]
 		
 	//[if] [in] marksample
@@ -194,6 +197,14 @@ program define med4way, eclass
 		local warning true
 	}
 	
+	//store estimates
+	if "`eststore'" != "" {
+		local eststore true
+	}
+	else {
+		local eststore false
+	}
+	
 	//survival outcome
 	if ("`yreg'"=="cox") | ("`yreg'"=="aft") {
 		local survoutcome true
@@ -218,6 +229,10 @@ program define med4way, eclass
 		gettoken avar varlist	: varlist
 		gettoken mvar cvars		: varlist
 	}
+	
+	//get rid of possible duplicates in cvars
+	local cvars : list uniq cvars
+	
 	
 	//mvar takes on 0/1 values if mreg is logistic
 	if ("`mreg'"=="logistic") {
@@ -304,7 +319,7 @@ program define med4way, eclass
 			*/ "but these variables have already been defined."
 		error 110
 	}
-	gen `inter' = `avar'*`mvar'
+	qui gen `inter' = `avar'*`mvar'
 	
 	// Compress a0 a1 m into one single vector
 	tempname aam 
@@ -330,7 +345,7 @@ program define med4way, eclass
 		
 	local nnames : word count `names'
 
-	// Count observations is touse
+	// Count observations if touse
 	qui count if `touse'
 	local nobs = r(N)
 	//==========================================================================	
@@ -391,6 +406,17 @@ program define med4way, eclass
 	if "`bootstrap'"=="true" {
 		display _n _col(4) as text "Bootstrap replications (reps):" 	_col(35) as res "`reps'"
 	}
+	//==========================================================================
+	
+	// Step 3===================================================================	
+	// Prepare call to med4way_engine
+	local call_med4way_engine med4way_engine if `touse', yvar(`yvar') avar(`avar') mvar(`mvar') /*
+		*/ cvar(`cvar')  c(`cmatrix') nc(`nc') inter(`inter') /*
+		*/ aam(`aam') yreg(`yreg') mreg(`mreg') dist(`dist') /*
+		*/ casecontrol(`casecontrol') output(`output') /*
+		*/ deltamethod(`deltamethod') bootstrap(false) `robust' /*
+		*/ names(`names') nn(`nnames') level(`level') eststore(`eststore') /*
+		*/ `yregoptions' `mregoptions'
 	//==========================================================================	
 
 	// Step 3===================================================================	
@@ -400,7 +426,8 @@ program define med4way, eclass
 		*/ aam(`aam') yreg(`yreg') mreg(`mreg') dist(`dist') /*
 		*/ casecontrol(`casecontrol') output(`output') /*
 		*/ deltamethod(`deltamethod') bootstrap(false) `robust' /*
-		*/ names(`names') nn(`nnames') level(`level')
+		*/ names(`names') nn(`nnames') level(`level') eststore(`eststore') /*
+		*/ `yregoptions' `mregoptions'
 
 	if "`deltamethod'" == "true" {
 		display _n(2) as text "-> 4-way decomposition: delta method" _n(1)
@@ -420,13 +447,13 @@ program define med4way, eclass
 
 		bootstrap _b, reps(`reps') level(`level') `seed' `saving' nodots /*
 			*/ level(`level') `bca' noh nol `diopts': /*
-				*/ med4way_engine if `touse', /*
-				*/ yvar(`yvar') avar(`avar') mvar(`mvar') /*
-				*/ cvar(`cvar')  c(`cmatrix') nc(`nc') inter(`inter') /*
-				*/ aam(`aam') yreg(`yreg') mreg(`mreg') /*
-				*/ dist(`dist') casecontrol(`casecontrol') output(`output') /*
-				*/ deltamethod(false)  bootstrap(true) `robust' /*
-				*/ names(`names') nn(`nnames') level(`level')
+			*/	med4way_engine if `touse', yvar(`yvar') avar(`avar') mvar(`mvar') /*
+			*/	cvar(`cvar')  c(`cmatrix') nc(`nc') inter(`inter') /*
+			*/  aam(`aam') yreg(`yreg') mreg(`mreg') dist(`dist') /*
+			*/  casecontrol(`casecontrol') output(`output') /*
+			*/  deltamethod(false) bootstrap(true) `robust' /*
+			*/  names(`names') nn(`nnames') level(`level') eststore(false) /*
+			*/  `yregoptions' `mregoptions'
 	
 		tempname b_bs repsm bias z0 se ci_normal ci_percentile ci_bc 
 		matrix `b_bs' = e(b_bs)
@@ -623,7 +650,7 @@ program define validate_c, rclass
 // 	c_local eretc "`c'"		// c used in med4way's ereturn
 	c_local wrnngtxt `wrnngtxt' 
 	
-	mata: st_local("c_missing", strofreal(hasmissing(strtoreal(tokens(st_local("c")))))) // check that there are no missing values in c. It happens for example if c() contains strings.
+	mata: st_local("c_missing", strofreal(hasmissing(strtoreal(tokens(st_local("c")))))) // check that there are no missing values in c. It happens for example if c() contains strings by mistake.
 	if (`c_missing' == 1) {
 		di as error "Error: please, check the option c(). It must contain only numbers and/or dots (.)"
 		error 198

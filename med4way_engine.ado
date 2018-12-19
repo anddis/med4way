@@ -9,7 +9,8 @@ program define med4way_engine, eclass
 		*/ [ cvar(varlist numeric) c(string) ] aam(string) /*
 		*/ yreg(string) mreg(string) inter(string) nc(real) [ dist(string) ] /*
 		*/ casecontrol(string) output(string) bootstrap(string) /*
-		*/ deltamethod(string) [ robust ] names(string) nn(real)
+		*/ deltamethod(string) names(string) nn(real) /*
+		*/ [ robust yregoptions(string) mregoptions(string) eststore(string) ]
 	
 	//[if] [in] marksample
  	marksample touse
@@ -22,29 +23,29 @@ program define med4way_engine, eclass
 	
 	tempname Vy betay Vm betam
 	
-	// Models for the outcome (7)
+	// Models for the outcome (7)===============================================
 	display `titley'
 	if ("`yreg'"=="linear") { // 1 linear
-		regress `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
+		regress `yvar' `avar' `mvar' `inter' `cvar' if `touse', `yregoptions'
 	}
 	else if ("`yreg'"=="logistic") { // 2 logit
-		logit `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
+		logit `yvar' `avar' `mvar' `inter' `cvar' if `touse', `yregoptions'
 	}
 	else if ("`yreg'"=="cox") {	// 3 cox
-		stcox `avar' `mvar' `inter' `cvar' if `touse', level(`level')
+		stcox `avar' `mvar' `inter' `cvar' if `touse', `yregoptions'
 	}
 	else if ("`yreg'"=="aft") { // 4 aft
-		streg `avar' `mvar' `inter' `cvar' if `touse', time dist(`dist') level(`level')
+		streg `avar' `mvar' `inter' `cvar' if `touse', time dist(`dist') `yregoptions'
 	}
 	else if ("`yreg'"=="logbinomial") { // 5 logbinomial
 		glm `yvar' `avar' `mvar' `inter' `cvar' if `touse', family(binomial) /*
-			*/ link(log) irls level(`level') vce(oim)
+			*/ link(log) `yregoptions'
 	}
 	else if ("`yreg'"=="poisson") { // 6 poisson
-		poisson `yvar' `avar' `mvar' `inter' `cvar' if `touse', `robust' level(`level')
+		poisson `yvar' `avar' `mvar' `inter' `cvar' if `touse', `robust' `yregoptions'
 	}
 	else if ("`yreg'"=="negbinomial") { // 7 negbinomial
-		nbreg `yvar' `avar' `mvar' `inter' `cvar' if `touse', level(`level')
+		nbreg `yvar' `avar' `mvar' `inter' `cvar' if `touse', `yregoptions'
 	}
 	
 	// Store e(b) and e(V) for the model for the outcome
@@ -55,31 +56,43 @@ program define med4way_engine, eclass
 		matrix `betay' = `betay'[1, 1..colsof(`betay')-1]
 	}	
 	
-	// Models for the mediator (2)
+	// Store estimates of the model for the outcome if requested
+	if ("`eststore'" == "true") {
+		est store med4way_yreg, nocopy
+	}
+	//==========================================================================	
+
+	// Models for the mediator (2)==============================================
 	display `titlem'
 	if ("`mreg'"=="linear") { // 1 linear
 		if ("`casecontrol'"=="true") {
 			regressml `mvar' `avar' `cvar' if `yvar' == 0 & `touse', /*
-				*/ onlybeta(`bootstrap') level(`level')
+				*/ onlybeta(`bootstrap') `mregoptions'
 		}
 		else if ("`casecontrol'"=="false") {
 			regressml `mvar' `avar' `cvar' if `touse', /*
-				*/ onlybeta(`bootstrap') level(`level')
+				*/ onlybeta(`bootstrap') `mregoptions'
 		}
 	}
 	else if ("`mreg'"=="logistic") { // 2 logit
 		if ("`casecontrol'"=="true") {
-			logit `mvar' `avar' `cvar' if `yvar' == 0 & `touse', level(`level')
+			logit `mvar' `avar' `cvar' if `yvar' == 0 & `touse', `mregoptions'
 		}
 		else if ("`casecontrol'"=="false") {
-			logit `mvar' `avar' `cvar' if `touse', level(`level')
+			logit `mvar' `avar' `cvar' if `touse', `mregoptions'
 		}
 	}
 	
 	// Store e(b) and e(V) for the model for the mediator
 	matrix `Vm' = e(V)
 	matrix `betam' = e(b)
-		
+	
+	// Store estimates of the model for the mediator if requested
+	if ("`eststore'" == "true") {
+		est store med4way_mreg, nocopy
+	}
+	//==========================================================================	
+	
 ********************************************************************************
 	
 	
@@ -125,33 +138,49 @@ end med4way_engine
 capture program drop regressml
 program define regressml, eclass
 	version 10.0
-	syntax varlist(min=2 numeric) [if] [, onlybeta(string) level(cilevel)]
+	syntax varlist(min=2 numeric) [if] [, onlybeta(string) noCONStant NOLOG * ]
 	// the idea behind the onlybeta option is that, when regressml is called
 	// within a bootstrap, it's useless to maximize the likelihood to get the SE
 	// of sigma2 (the reason I wrote this program). 
 	// Might as well return a matrix of 0 for e(V) and save time.
 	
+	// parse options
+	_get_diopts diopts options, `options'
+	mlopts mlopts options, `options'
+	
 	marksample touse
 	
-	if ("`onlybeta'" == "") local onlybeta "false"
+	if ("`onlybeta'" == "") {
+		local onlybeta "false"
+	}
 	
 	gettoken dep indep: varlist
 	
-	qui _regress `dep' `indep' if `touse'
+	// drop collinear variables
+	_rmcoll `indep', `constant'  
+	local indep `r(varlist)'
+	
+	qui _regress `dep' `indep' if `touse', `constant'
 	tempname sigma2reg
 	matrix `sigma2reg' = e(rmse)^2 * (e(df_r) / e(N))
 	matrix colnames `sigma2reg' = "sigma2:_cons"
 	local nm = e(N)
 
 	if ("`onlybeta'"=="false") {
-		tempname breg
+		tempname breg initmat
 		matrix `breg' = e(b)
 		matrix coleq `breg' = "mu"
+		matrix `initmat' = (`breg', `sigma2reg')
 		
-		qui ml model lf med4way_normal_ll (mu: `dep' = `indep') (sigma2:) if `touse', /*
-			*/ title("Linear regression (Maximum Likelihood)") //waldtest(0)
-		qui ml init `breg' `sigma2reg'
-		ml maximize, search(off) level(`level')
+		ml model lf med4way_normal_ll /*
+			*/ (mu: `dep' = `indep', `constant') (sigma2:) /*
+			*/ if `touse', /*
+			*/ title("Linear regression (Maximum Likelihood)") /*
+			*/ init(`initmat', skip) search(off) /*
+			*/ `mlopts' /*
+			*/ `nolog' /*
+			*/ maximize 
+		ml display, `diopts'
 	}
 	
 	tempname bML VML
@@ -168,9 +197,10 @@ program define regressml, eclass
 		matrix rownames `VML' = `c' "sigma2:_cons"
 	} 
 	
-	ereturn post `bML' `VML', depname(`mvar') obs(`nm')
+	ereturn post `bML' `VML', depname(`mvar') obs(`nm') esample(`touse')
+	ereturn local cmd "regressml"
+	ereturn local cmdline "regressml `0'" 
 end regressml
-
 
 /**********************
 * m4w_deriv (mata)
