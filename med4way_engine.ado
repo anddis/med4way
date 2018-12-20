@@ -26,7 +26,8 @@ program define med4way_engine, eclass
 	// Models for the outcome (7)===============================================
 	display `titley'
 	if ("`yreg'"=="linear") { // 1 linear
-		regress `yvar' `avar' `mvar' `inter' `cvar' if `touse', `yregoptions'
+		regressml `yvar' `avar' `mvar' `inter' `cvar' if `touse', ///
+			onlybeta(`bootstrap') `yregoptions'
 	}
 	else if ("`yreg'"=="logistic") { // 2 logit
 		logit `yvar' `avar' `mvar' `inter' `cvar' if `touse', `yregoptions'
@@ -51,7 +52,9 @@ program define med4way_engine, eclass
 	// Store e(b) and e(V) for the model for the outcome
 	matrix `Vy' = e(V)
 	matrix `betay' = e(b)
-	if ((("`yreg'"=="aft") & ("`dist'"=="weibull")) | ("`yreg'"=="negbinomial")) { // drop ancillary parameters (move to m4w_deriv?)
+	if ((("`yreg'"=="aft") & ("`dist'"=="weibull")) | /*
+		*/ ("`yreg'"=="negbinomial") | /*
+		*/ ("`yreg'"=="linear")) { // drop ancillary parameters (move to m4w_deriv?)
 		matrix `Vy' = `Vy'[1..colsof(`Vy')-1, 1..colsof(`Vy')-1]
 		matrix `betay' = `betay'[1, 1..colsof(`betay')-1]
 	}	
@@ -143,16 +146,15 @@ program define regressml, eclass
 	// within a bootstrap, it's useless to maximize the likelihood to get the SE
 	// of sigma2 (the reason I wrote this program). 
 	// Might as well return a matrix of 0 for e(V) and save time.
-	
-	// parse options
-	_get_diopts diopts options, `options'
-	mlopts mlopts options, `options'
-	
-	marksample touse
-	
 	if ("`onlybeta'" == "") {
 		local onlybeta "false"
 	}
+	
+	marksample touse
+
+	// parse options and tokenize varlist
+	_get_diopts diopts options, `options'
+	mlopts mlopts options, `options'
 	
 	gettoken dep indep: varlist
 	
@@ -160,6 +162,7 @@ program define regressml, eclass
 	_rmcoll `indep', `constant'  
 	local indep `r(varlist)'
 	
+	// initial values
 	qui _regress `dep' `indep' if `touse', `constant'
 	tempname sigma2reg
 	matrix `sigma2reg' = e(rmse)^2 * (e(df_r) / e(N))

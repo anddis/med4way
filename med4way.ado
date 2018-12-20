@@ -34,7 +34,7 @@ program define med4way, eclass
 	*/ CASEControl /*
 	*/ FULLoutput /*
 	*/ NODELTAMethod /*
-	*/ ROBUST /* undocumented
+	*/ ROBUST /* undocumented - superseeded by yregoptions()
 	*/ NOLEGEND /* undocumented
 	*/ NOWARNing /* undocumented
 	*/ level(cilevel) /*
@@ -146,7 +146,7 @@ program define med4way, eclass
 	
 	
 	//bootsrap
-	if "`bootstrap'" !="" {
+	if ("`bootstrap'" !="") {
 		local bootstrap true
 	}
 	else {
@@ -154,7 +154,7 @@ program define med4way, eclass
 	}
 	
 	//suppress delta method
-	if "`nodeltamethod'" !="" {
+	if ("`nodeltamethod'" !="") {
 		local deltamethod false
 	}
 	else {
@@ -162,7 +162,7 @@ program define med4way, eclass
 	} 
 
 	//full output or reduced output
-	if "`fulloutput'" != "" {
+	if ("`fulloutput'" != "") {
 		local output full
 	}
 	else {
@@ -170,7 +170,7 @@ program define med4way, eclass
 	}
 
 	//casecontrol or not
-	if "`casecontrol'" !="" {
+	if ("`casecontrol'" !="") {
 		local casecontrol true
 	}
 	else {
@@ -178,19 +178,19 @@ program define med4way, eclass
 	}
 	
 	//legend or not
-	if "`nolegend'" !="" {
+	if ("`nolegend'" !="") {
 		local legend false
 	}
 	else {
 		local legend true
 	}
-	if "`deltamethod'"=="false" & "`bootstrap'"=="false" { 
+	if ("`deltamethod'"=="false") & ("`bootstrap'"=="false") { 
 		// if deltamethod not requested and bootstrap not requested, don't print the legend (there is no legend to print!)
 		local legend false 
 	}
 
 	//warnings or not
-	if "`nowarning'" !="" {
+	if ("`nowarning'" !="") {
 		local warning false
 	}
 	else {
@@ -198,7 +198,7 @@ program define med4way, eclass
 	}
 	
 	//store estimates
-	if "`eststore'" != "" {
+	if ("`eststore'" != "") {
 		local eststore true
 	}
 	else {
@@ -265,13 +265,13 @@ program define med4way, eclass
 	//casecontrol works only with yreg logistic
 	if ("`casecontrol'"=="true") & !("`yreg'"=="logistic") {
 		display as error "Error: option casecontrol can only be specified together with a " /*
-			*/ "logistic regression model for the outcome (yreg)."
+			*/ "logistic regression model for the outcome: yreg(logistic)."
 			error 198
 	}
 	
 	//validate rare outcome
 	if ("`yreg'"=="logistic") {
-		if "`casecontrol'"=="true" {
+		if ("`casecontrol'"=="true") {
 			local wrnngtxt `wrnngtxt' 2
 		}
 		else {
@@ -406,17 +406,6 @@ program define med4way, eclass
 	if "`bootstrap'"=="true" {
 		display _n _col(4) as text "Bootstrap replications (reps):" 	_col(35) as res "`reps'"
 	}
-	//==========================================================================
-	
-	// Step 3===================================================================	
-	// Prepare call to med4way_engine
-	local call_med4way_engine med4way_engine if `touse', yvar(`yvar') avar(`avar') mvar(`mvar') /*
-		*/ cvar(`cvar')  c(`cmatrix') nc(`nc') inter(`inter') /*
-		*/ aam(`aam') yreg(`yreg') mreg(`mreg') dist(`dist') /*
-		*/ casecontrol(`casecontrol') output(`output') /*
-		*/ deltamethod(`deltamethod') bootstrap(false) `robust' /*
-		*/ names(`names') nn(`nnames') level(`level') eststore(`eststore') /*
-		*/ `yregoptions' `mregoptions'
 	//==========================================================================	
 
 	// Step 3===================================================================	
