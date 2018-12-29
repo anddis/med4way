@@ -1,8 +1,9 @@
 *! Hello, I'm med4way.ado
-*! v2.2.3 - 25nov2018
+*! v2.3.0 - XXxxxXXXX
 
 /* 
 Previous versions:
+v2.2.3 - 25nov2018
 v2.2.2 - 14jun2018
 v2.2.1 - 19sep2017
 v2.2.0 - 31jul2017
@@ -44,7 +45,7 @@ program define med4way, eclass
 	*/ SAving(passthru) /*
 	*/ YREGOPTions(passthru) /*
 	*/ MREGOPTions(passthru) /*
-	*/ ESTSTOre /* undocumented?
+	*/ ESTSTOre /* undocumented
 	*/ BCA  * ]
 		
 	//[if] [in] marksample
@@ -359,7 +360,8 @@ program define med4way, eclass
 				display as error "Warning: this analysis assumes a rare outcome. " /*
 					*/ "The outcome variable `yvar' has " /*
 					*/  %2.0f `prev' `"% of "positive" outcomes. Consider a logbinomial "' /*
-					*/ "or a Poisson model (with robust option) for the outcome."
+					*/ "or a Poisson regression model (with a robust estimator of the variance-covariance " /*
+					*/ "matrix) for the outcome."
 			}
 			if `w' == 2 {
 				display as error "Warning: this analysis assumes a rare outcome."
@@ -373,12 +375,12 @@ program define med4way, eclass
 			}
 			if `w' == 5 {
 				display as error "Warning: fixed values for the covariates `cvar' " /*
-					*/ "were not provided. All covariates are fixed at their means."
+					*/ "were not provided. All covariates are fixed at their respective mean."
 			}
 			if `w' == 6 {
 				display as error "Warning: fixed values for the covariates `cvar' " /*
 					*/ "were provided only for some variables. Covariates are fixed at " /*
-					*/ "the provided values or at their mean."
+					*/ "the provided values or at their respective mean."
 			}
 			if `w' == 7 {
 				display as error "Warning: it looks like the treatment variable `avar' " /*
@@ -390,15 +392,15 @@ program define med4way, eclass
 	
 	display _n(1) as text "-> Summary" _n(1)
 	display _col(4) as text "Outcome    (yvar):"  _col(24) as res "`=cond("`survoutcome'"=="true", "_t", "`yvar'")'"
-	display _col(4) as text "Treatment  (avar):"  _col(24) as res "`avar'"
+	display _col(4) as text "Exposure   (avar):"  _col(24) as res "`avar'"
 	display _col(4) as text "Mediator   (mvar):"  _col(24) as res "`mvar'"
 	display _col(4) as text "Covariates (cvars):" _col(24) as res "`=cond(`nc'==0, "[ none ]", "`cvar'")'" _n(1)
 	
 	display _col(4) as text "Model for the outcome  (yreg):" _col(35) as res "`yreg'`=cond("`dist'"!="", ", `dist'", "")'"
 	display _col(4) as text "Model for the mediator (mreg):" _col(35) as res "`mreg'" _n(1)
 	
-	display _col(4) as text "Referent treatment level (a0):" 			_col(46) as res "`a0'"
-	display _col(4) as text "Actual treatment level   (a1):" 			_col(46) as res "`a1'"
+	display _col(4) as text "Referent exposure level (a0):" 			_col(46) as res "`a0'"
+	display _col(4) as text "Actual exposure level   (a1):" 			_col(46) as res "`a1'"
 	display _col(4) as text "Mediator level for the decomposition (m):" _col(46) as res "`m'"
 	if `nc' != 0 {
 		display _col(4) as text "Fixed values of the covariates (c):"   _col(46) as res "`cdisp'"
@@ -541,6 +543,7 @@ program define med4way, eclass
 		ereturn matrix c = `cmatrix'
 	}
 
+	ereturn local version "2.3.0"
 	ereturn local cmd "med4way"
 	ereturn local cmdline "med4way `0'"
 	//==========================================================================	
@@ -646,6 +649,7 @@ program define validate_c, rclass
 	}
 	tempname cmatrix // c needs to be a matrix to pass it on to mata -> dump c into cmatrix
 	mata: st_matrix("`cmatrix'", strtoreal(tokens(st_local("c"))))
+	matrix colnames `cmatrix' = `cvars'
 	return mat cmatrix = `cmatrix'
 end validate_c 
 

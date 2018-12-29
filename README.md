@@ -1,14 +1,14 @@
 # med4way
 ### A Stata command for the 4-way decomposition using parametric regression models
 
-- Current version: `2.2.3` 
-- Release date: `25nov2018`
+- Current version: `2.3.0` 
+- Release date: `XXxxxXXXX`
 
 ---
 
 ### Description
 
-`med4way` uses parametric regression models to estimate the components of the 4-way decomposition of the total effect of a treatment on a outcome in the presence of a mediator with which the exposure may interact. This decomposition breaks down the total effect of the treatment on the outcome into components due to mediation alone, to interaction alone, to both mediation and interaction, and to neither mediation nor interaction.
+`med4way` uses parametric regression models to estimate the components of the 4-way decomposition of the total effect of an exposure on a outcome in the presence of a mediator with which the exposure may interact. This decomposition breaks down the total effect of the exposure on the outcome into components due to mediation alone, to interaction alone, to both mediation and interaction, and to neither mediation nor interaction.
 
 `med4way` provides standard errors and confidence intervals for the estimated components using the delta method (default) or the bootstrap.
 

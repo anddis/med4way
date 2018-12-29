@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.2.3 25nov2018}{...}
+{* *! version 2.3.0 XXxxxXXXX}{...}
 
 {cmd:help med4way}
 {hline}
@@ -22,7 +22,7 @@
 {it:yvar} is the variable name for the outcome. Note that {it:yvar} must not be specified when the model for the outcome is an Accelerated Failure Time or a Cox proportional hazards model. In these cases, you must {helpb stset} your data before running med4way.
 
 {phang}
-{it:avar} is the variable name for the treatment. If binary, it must be coded as 0/1.
+{it:avar} is the variable name for the exposure. If binary, it must be coded as 0/1.
 
 {phang}
 {it:mvar} is the variable name for the mediator. If binary, it must be coded as 0/1.
@@ -34,17 +34,18 @@
 {synoptset 31 tabbed}{...}
 {synopthdr :options}
 {synoptline}
-{p2coldent: * {opt a0(#)}}referent treatment level{p_end}
-{p2coldent: * {opt a1(#)}}actual treatment level{p_end}
+{p2coldent: * {opt a0(#)}}referent exposure level{p_end}
+{p2coldent: * {opt a1(#)}}actual exposure level{p_end}
 {p2coldent: * {opt m(#)}}level of the mediator at which to compute the 4-way decomposition{p_end}
 {p2coldent: * {opt yreg(string)}}form of the regression model for the outcome{p_end}
 {p2coldent: * {opt mreg(string)}}form of the regression model for the mediator{p_end}
 
-{synopt :{opth c(numlist)}}values of the covariates {it:cvars} at which to compute the 4-way decomposition{p_end}
+{synopt :{opt c(string)}}values of the covariates {it:cvars} at which to compute the 4-way decomposition{p_end}
+{synopt :{opt yregopt:ions(string)}}pass options to the regression model for the outcome{p_end}
+{synopt :{opt mregopt:ions(string)}}pass options to the regression model for the mediator{p_end}
 {synopt :{opt casec:ontrol}}treat the data as coming from a case-control study{p_end}
 {synopt :{opt full:output}}compute also the proportion of the Total Effect attributable to its 4 components and the proportions attributable to mediation, interaction, and either mediation or interaction or both{p_end}
 {synopt :{opt nodeltam:ethod}}suppress the calculation of the standard errors using the delta method{p_end}
-{synopt :{opt robust}}use the sandwich/robust estimator of variance when using a Poisson model for the outcome{p_end}
 
 {synopt :{opt level(#)}}set confidence level; default is {cmd:level(95)}{p_end}
 {synopt :{it:display_options}}control formatting{p_end}
@@ -63,7 +64,7 @@
 {title:Description}
 
 {pstd}
-{cmd:med4way} uses parametric regression models to estimate the components of the 4-way decomposition of the total effect of treatment {it:avar} on outcome {it:yvar} in the presence of mediator {it:mvar} with which the exposure may interact. This decomposition breaks down the total effect of the treatment on the outcome into components due to mediation alone, to interaction alone, to both mediation and interaction, and to neither mediation nor interaction. 
+{cmd:med4way} uses parametric regression models to estimate the components of the 4-way decomposition of the total effect of the exposure {it:avar} on the outcome {it:yvar} in the presence of the mediator {it:mvar} with which the exposure may interact. This decomposition breaks down the total effect of the exposure on the outcome into components due to mediation alone, to interaction alone, to both mediation and interaction, and to neither mediation nor interaction. 
 
 {pstd}
 {cmd:med4way} provides standard errors and confidence intervals for the estimated components using the delta method (default) or the bootstrap.
@@ -75,10 +76,10 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 {title:Options}
 
 {phang}
-{opt a0(#)} specifies the referent level of the treatment.
+{opt a0(#)} specifies the referent level of the exposure.
 
 {phang}
-{opt a1(#)} specifies the actual level of the treatment.
+{opt a1(#)} specifies the actual level of the exposure.
 
 {phang}
 {opt m(#)} specifies the level of the mediator at which the 4-way decomposition is computed.
@@ -102,8 +103,15 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 {p 7 6 2}{opt logi:stic}: logistic regression{p_end}
 
 {phang}
-{opt c(string)} fixes the values of the covariates {it:cvars} at which to compute the 4-way decomposition. If {it:cvars} are specified but this option is omitted, {it:cvars} will be automatically fixed at their respective mean values. If this option is specified, the number of values of {opt c(numlist)} must correspond to the number of {it:cvars}. A dot (.) can be used to fix the value of a specific covariate to its mean. 
+{opt c(string)} fixes the values of the covariates {it:cvars} at which to compute the 4-way decomposition. If {it:cvars} are specified but this option is omitted, {it:cvars} will be automatically fixed at their respective mean values. If this option is specified, the number of values of {opt c(numlist)} must correspond to the number of {it:cvars}. A placeholder [dot (.)] can be used to fix the value of a specific covariate to its mean. 
 Example: the covariates specified are {it:cvar1 cvar2 cvar3} and the user wants to fix the value for {it:cvar2} to 6, while letting the values for {it:cvar1} and {it:cvar3} to be equal to their respective means. This can be achieved with the option {opt c(. 6 .)}.
+
+{phang}
+{opt yregopt:ions(string)} passes options to the Stata command used to fit the regression model for the outcome. It's the user's responsibility to make sure that the specified options are allowed and appropriately used.
+Example: to display Odds Ratios instead of coefficients with {opt yreg(logistic)}, specify {opt yregopt:ions(or)}.
+
+{phang}
+{opt mregopt:ions(string)} passes options to the Stata command used to fit the regression model for the mediator. It's the user's responsibility to make sure that the specified options are allowed and appropriately used.
 
 {phang}
 {opt casec:ontrol} specifies that the data comes from a case-control study (that is, sampling was done on the outcome). This option can be specified only together with a logistic regression model for the outcome.
@@ -113,9 +121,6 @@ Example: the covariates specified are {it:cvar1 cvar2 cvar3} and the user wants 
 
 {phang}
 {opt nodeltam:ethod} suppresses the calculation of the standard errors of the estimated quantities using the delta method.
-
-{phang}
-{opt robust} uses the sandwich/robust estimator of the variance-covariance matrix when a Poisson regression model for the outcome is specified.
 
 {phang}
 {opt level(#)}; see {helpb estimation options##level():[R] estimation options}.
@@ -197,8 +202,8 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 {synoptset 20 tabbed}{...}
 {p2col 5 15 19 2: Scalars}{p_end}
 {synopt:{cmd:e(N)}}number of observations{p_end}
-{synopt:{cmd:e(a0)}}referent treatment level{p_end}
-{synopt:{cmd:e(a1)}}actual treatment level{p_end}
+{synopt:{cmd:e(a0)}}referent exposure level{p_end}
+{synopt:{cmd:e(a1)}}actual exposure level{p_end}
 {synopt:{cmd:e(m)}}level of the mediator used for the 4-way decomposition{p_end}
 {synopt:{cmd:e(level)}}confidence level{p_end}
 {p2coldent: * {cmd:e(N_reps)}}number of requested bootstrap replications{p_end}
@@ -207,8 +212,9 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 {p2col 5 15 19 2: Macros}{p_end}
 {synopt:{cmd:e(cmdline)}}command as typed{p_end}
 {synopt:{cmd:e(cmd)}}{cmd:med4way}{p_end}
+{synopt:{cmd:e(version)}}program's version{p_end}
 {synopt:{cmd:e(yvar)}}name of outcome variable{p_end}
-{synopt:{cmd:e(avar)}}name of treatment variable{p_end}
+{synopt:{cmd:e(avar)}}name of exposure variable{p_end}
 {synopt:{cmd:e(mvar)}}name of mediator variable{p_end}
 {synopt:{cmd:e(cvars)}}name of covariate variables{p_end}
 {synopt:{cmd:e(yreg)}}form of the regression model for the outcome{p_end}
