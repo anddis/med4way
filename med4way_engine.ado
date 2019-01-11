@@ -18,13 +18,11 @@ program define med4way_engine, eclass
 ********************************************************************************
 *********** Fit model for the outcome and for the mediator *********************
 ********************************************************************************
-	local titley `"_n(2) as text "-> Model for the outcome""'
-	local titlem `"_n(2) as text "-> Model for the mediator""'
-	
 	tempname Vy betay Vm betam
 	
 	// Models for the outcome (7)===============================================
-	display `titley'
+	display _n(2) as text "-> Model for the outcome"
+	
 	if ("`yreg'"=="linear") { // 1 linear
 		regressml `yvar' `avar' `mvar' `inter' `cvar' if `touse', ///
 			onlybeta(`bootstrap') `yregoptions'
@@ -66,7 +64,8 @@ program define med4way_engine, eclass
 	//==========================================================================	
 
 	// Models for the mediator (2)==============================================
-	display `titlem'
+	display _n(2) as text "-> Model for the mediator"
+	
 	if ("`mreg'"=="linear") { // 1 linear
 		if ("`casecontrol'"=="true") {
 			regressml `mvar' `avar' `cvar' if `yvar' == 0 & `touse', /*
@@ -142,6 +141,7 @@ capture program drop regressml
 program define regressml, eclass
 	version 10.0
 	syntax varlist(min=2 numeric) [if] [, onlybeta(string) noCONStant NOLOG * ]
+
 	// the idea behind the onlybeta option is that, when regressml is called
 	// within a bootstrap, it's useless to maximize the likelihood to get the SE
 	// of sigma2 (the reason I wrote this program). 

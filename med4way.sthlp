@@ -193,6 +193,22 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 {pstd}Accelerated failure time regression model (exponential survival distribution) for the outcome; Logistic regression model for the mediator; Display full output{p_end}
 {phang2}{stata med4way treat m_bin cvar1, a0(0) a1(1) m(0) yreg(aft, e) mreg(logistic) c(1) fulloutput}{p_end}
 
+    {title:Continuous outcome, continuous mediator}
+
+{pstd}The following code reproduces an example from the {browse "http://documentation.sas.com/?docsetId=statug&docsetTarget=statug_causalmed_examples01.htm&docsetVersion=14.3&locale=en":SAS user's guide}{p_end}
+
+{pstd}Load the data{p_end}
+{phang2}{stata use med4way_example_3.dta}{p_end}
+
+{pstd}Calculate mean value for the exposure and the mediator{p_end}
+{phang2}{stata tabstat Encourage Motivation}
+
+{pstd}Linear regression model for the outcome; Linear regression model for the mediator; Delta method standard errors. Note: a0=mean(Encourage)-0.5; a1=mean(Encourage)+0.5; m=mean(Motivation) {p_end}
+{phang2}{stata med4way CogPerform Encourage Motivation SocStatus FamSize, yreg(linear) mreg(linear) a0(33.91667) a1(34.91667) m(38.47)}
+
+{pstd}Re-display the results using fewer decimal places and suppressing the p-values{p_end}
+{phang2}{stata med4way, cformat(%6.4f) nopvalues}
+
 
 {title:Stored results}
 
