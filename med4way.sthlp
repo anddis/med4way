@@ -103,12 +103,12 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 {p 7 6 2}{opt logi:stic}: logistic regression{p_end}
 
 {phang}
-{opt c(string)} fixes the values of the covariates {it:cvars} at which to compute the 4-way decomposition. If {it:cvars} are specified but this option is omitted, {it:cvars} will be automatically fixed at their respective mean values. If this option is specified, the number of values of {opt c(numlist)} must correspond to the number of {it:cvars}. A placeholder [dot (.)] can be used to fix the value of a specific covariate to its mean. 
+{opt c(string)} fixes the values of the covariates {it:cvars} at which to compute the 4-way decomposition. If {it:cvars} are specified but this option is omitted, {it:cvars} will be automatically fixed at their respective mean values. If this option is specified, the number of values in {opt c(string)} must correspond to the number of {it:cvars}. A placeholder [dot (.)] can be used to fix the value of a specific covariate to its mean. 
 Example: the covariates specified are {it:cvar1 cvar2 cvar3} and the user wants to fix the value for {it:cvar2} to 6, while letting the values for {it:cvar1} and {it:cvar3} to be equal to their respective means. This can be achieved with the option {opt c(. 6 .)}.
 
 {phang}
 {opt yregopt:ions(string)} passes options to the Stata command used to fit the regression model for the outcome. It's the user's responsibility to make sure that the specified options are allowed and appropriately used.
-Example: to display Odds Ratios instead of coefficients with {opt yreg(logistic)}, specify {opt yregopt:ions(or)}.
+Example: to display Odds Ratios instead of coefficients, specify {opt yregoptions(or)}.
 
 {phang}
 {opt mregopt:ions(string)} passes options to the Stata command used to fit the regression model for the mediator. It's the user's responsibility to make sure that the specified options are allowed and appropriately used.
@@ -206,7 +206,7 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 {pstd}Linear regression model for the outcome; Linear regression model for the mediator; Delta method standard errors. Note: a0=mean(Encourage)-0.5; a1=mean(Encourage)+0.5; m=mean(Motivation) {p_end}
 {phang2}{stata med4way CogPerform Encourage Motivation SocStatus FamSize, yreg(linear) mreg(linear) a0(33.91667) a1(34.91667) m(38.47)}
 
-{pstd}Re-display the results using fewer decimal places and suppressing the p-values{p_end}
+{pstd}Display the results using four decimal places and suppressing the p-values{p_end}
 {phang2}{stata med4way, cformat(%6.4f) nopvalues}
 
 

@@ -359,9 +359,7 @@ program define med4way, eclass
 			if `w' == 1 {
 				display as error "Warning: this analysis assumes a rare outcome. " /*
 					*/ "The outcome variable `yvar' has " /*
-					*/  %2.0f `prev' `"% of "positive" outcomes. Consider a logbinomial "' /*
-					*/ "or a Poisson regression model (with a robust estimator of the variance-covariance " /*
-					*/ "matrix) for the outcome."
+					*/  %2.0f `prev' `"% of "positive" outcomes."'
 			}
 			if `w' == 2 {
 				display as error "Warning: this analysis assumes a rare outcome."

@@ -24,8 +24,7 @@ program define med4way_engine, eclass
 	display _n(2) as text "-> Model for the outcome"
 	
 	if ("`yreg'"=="linear") { // 1 linear
-		regressml `yvar' `avar' `mvar' `inter' `cvar' if `touse', ///
-			onlybeta(`bootstrap') `yregoptions'
+		regressml `yvar' `avar' `mvar' `inter' `cvar' if `touse', `yregoptions'
 	}
 	else if ("`yreg'"=="logistic") { // 2 logit
 		logit `yvar' `avar' `mvar' `inter' `cvar' if `touse', `yregoptions'
@@ -68,12 +67,10 @@ program define med4way_engine, eclass
 	
 	if ("`mreg'"=="linear") { // 1 linear
 		if ("`casecontrol'"=="true") {
-			regressml `mvar' `avar' `cvar' if `yvar' == 0 & `touse', /*
-				*/ onlybeta(`bootstrap') `mregoptions'
+			regressml `mvar' `avar' `cvar' if `yvar' == 0 & `touse', `mregoptions'
 		}
 		else if ("`casecontrol'"=="false") {
-			regressml `mvar' `avar' `cvar' if `touse', /*
-				*/ onlybeta(`bootstrap') `mregoptions'
+			regressml `mvar' `avar' `cvar' if `touse', `mregoptions'
 		}
 	}
 	else if ("`mreg'"=="logistic") { // 2 logit
@@ -140,16 +137,8 @@ end med4way_engine
 capture program drop regressml
 program define regressml, eclass
 	version 10.0
-	syntax varlist(min=2 numeric) [if] [, onlybeta(string) noCONStant NOLOG * ]
+	syntax varlist(min=2 numeric) [if] [, noCONStant NOLOG * ]
 
-	// the idea behind the onlybeta option is that, when regressml is called
-	// within a bootstrap, it's useless to maximize the likelihood to get the SE
-	// of sigma2 (the reason I wrote this program). 
-	// Might as well return a matrix of 0 for e(V) and save time.
-	if ("`onlybeta'" == "") {
-		local onlybeta "false"
-	}
-	
 	marksample touse
 
 	// parse options and tokenize varlist
@@ -169,38 +158,21 @@ program define regressml, eclass
 	matrix colnames `sigma2reg' = "sigma2:_cons"
 	local nm = e(N)
 
-	if ("`onlybeta'"=="false") {
-		tempname breg initmat
-		matrix `breg' = e(b)
-		matrix coleq `breg' = "mu"
-		matrix `initmat' = (`breg', `sigma2reg')
-		
-		ml model lf med4way_normal_ll /*
-			*/ (mu: `dep' = `indep', `constant') (sigma2:) /*
-			*/ if `touse', /*
-			*/ title("Linear regression (Maximum Likelihood)") /*
-			*/ init(`initmat', skip) search(off) /*
-			*/ `mlopts' /*
-			*/ `nolog' /*
-			*/ maximize 
-		ml display, `diopts'
-	}
+	tempname breg initmat
+	matrix `breg' = e(b)
+	matrix coleq `breg' = "mu"
+	matrix `initmat' = (`breg', `sigma2reg')
 	
-	tempname bML VML
-	if ("`onlybeta'" =="false") {
-		matrix `bML' = e(b)
-		matrix `VML' = e(V)	
-	}
-	else if ("`onlybeta'"== "true") {
-		matrix `bML' = e(b), `sigma2reg'
-		matrix `VML' = J(colsof(e(b))+1, colsof(e(b))+1, 0)
-		
-		local c : colfullnames e(b)
-		matrix colnames `VML' = `c' "sigma2:_cons"
-		matrix rownames `VML' = `c' "sigma2:_cons"
-	} 
+	ml model lf med4way_normal_ll /*
+		*/ (mu: `dep' = `indep', `constant') (sigma2:) /*
+		*/ if `touse', /*
+		*/ title("Linear regression (Maximum Likelihood)") /*
+		*/ init(`initmat', skip) search(off) /*
+		*/ `mlopts' /*
+		*/ `nolog' /*
+		*/ maximize 
+	ml display, `diopts'
 	
-	ereturn post `bML' `VML', depname(`mvar') obs(`nm') esample(`touse')
 	ereturn local cmd "regressml"
 	ereturn local cmdline "regressml `0'" 
 end regressml
