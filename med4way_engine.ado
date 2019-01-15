@@ -3,7 +3,7 @@
 
 capture program drop med4way_engine
 program define med4way_engine, eclass
-	version 10.0	
+	version 11.0	
 
 	syntax [if], [ yvar(string) level(cilevel) ] avar(string) mvar(string) /*
 		*/ [ cvar(varlist numeric) c(string) ] aam(string) /*
@@ -136,11 +136,11 @@ end med4way_engine
 **********************/
 capture program drop regressml
 program define regressml, eclass
-	version 10.0
+	version 11.0
 	syntax varlist(min=2 numeric) [if] [, noCONStant NOLOG * ]
 
 	marksample touse
-
+	
 	// parse options and tokenize varlist
 	_get_diopts diopts options, `options'
 	mlopts mlopts options, `options'
@@ -163,7 +163,7 @@ program define regressml, eclass
 	matrix coleq `breg' = "mu"
 	matrix `initmat' = (`breg', `sigma2reg')
 	
-	ml model lf med4way_normal_ll /*
+	ml model lf2 med4way_normal_lf2 /*
 		*/ (mu: `dep' = `indep', `constant') (sigma2:) /*
 		*/ if `touse', /*
 		*/ title("Linear regression (Maximum Likelihood)") /*
@@ -180,6 +180,7 @@ end regressml
 /**********************
 * m4w_deriv (mata)
 **********************/
+version 11
 clear mata
 set matastrict on 
 

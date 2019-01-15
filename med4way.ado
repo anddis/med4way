@@ -14,11 +14,18 @@ v2.0.0 - 27mar2017
 
 capture program drop med4way 
 program define med4way, eclass
-	version 10.0
+	version 11.0
 
 	if replay() {
 		if ("`e(cmd)'" != "med4way") error 301
 		
+		if "`e(vce)'" == "bootstrap" {
+			local vcetype "boostrap"
+		}
+		else {
+			local vcetype "delta method"
+		}
+		display _n(1) "-> 4-way decomposition: `vcetype'" _n(1)
 		Display `0'
 		exit
 	}
@@ -47,7 +54,7 @@ program define med4way, eclass
 	*/ MREGOPTions(passthru) /*
 	*/ ESTSTOre /* undocumented
 	*/ BCA  * ]
-		
+
 	//[if] [in] marksample
 	marksample touse
 	
@@ -541,7 +548,7 @@ program define med4way, eclass
 		ereturn matrix c = `cmatrix'
 	}
 
-	ereturn local version "2.3.0"
+	ereturn local med4way_version "2.3.0"
 	ereturn local cmd "med4way"
 	ereturn local cmdline "med4way `0'"
 	//==========================================================================	

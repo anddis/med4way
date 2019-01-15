@@ -228,7 +228,7 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 {p2col 5 15 19 2: Macros}{p_end}
 {synopt:{cmd:e(cmdline)}}command as typed{p_end}
 {synopt:{cmd:e(cmd)}}{cmd:med4way}{p_end}
-{synopt:{cmd:e(version)}}program's version{p_end}
+{synopt:{cmd:e(med4way_version)}}program's version{p_end}
 {synopt:{cmd:e(yvar)}}name of outcome variable{p_end}
 {synopt:{cmd:e(avar)}}name of exposure variable{p_end}
 {synopt:{cmd:e(mvar)}}name of mediator variable{p_end}
