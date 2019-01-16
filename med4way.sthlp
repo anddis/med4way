@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.3.0 XXxxxXXXX}{...}
+{* *! version 2.3.0 16jan2019}{...}
 
 {cmd:help med4way}
 {hline}

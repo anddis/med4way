@@ -7,11 +7,11 @@ d
 d After installation, see help med4way
 d
 d Current version: 2.3.0
-d Distribution-Date: XXxxxXXXX
+d Distribution-Date: 16jan2019
 d
 f med4way.ado
 f med4way_engine.ado
-f med4way_normal_ll.ado
+f med4way_normal_lf2.ado
 f med4way.sthlp
 f med4way_example_1.dta
 f med4way_example_2.dta

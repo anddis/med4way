@@ -3,7 +3,7 @@
 
 capture program drop med4way_engine
 program define med4way_engine, eclass
-	version 11.0	
+	version 11
 
 	syntax [if], [ yvar(string) level(cilevel) ] avar(string) mvar(string) /*
 		*/ [ cvar(varlist numeric) c(string) ] aam(string) /*
@@ -136,7 +136,7 @@ end med4way_engine
 **********************/
 capture program drop regressml
 program define regressml, eclass
-	version 11.0
+	version 11
 	syntax varlist(min=2 numeric) [if] [, noCONStant NOLOG * ]
 
 	marksample touse

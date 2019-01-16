@@ -1,5 +1,5 @@
 *! Hello, I'm med4way.ado
-*! v2.3.0 - XXxxxXXXX
+*! v2.3.0 - 16jan2019
 
 /* 
 Previous versions:
@@ -14,7 +14,7 @@ v2.0.0 - 27mar2017
 
 capture program drop med4way 
 program define med4way, eclass
-	version 11.0
+	version 11
 
 	if replay() {
 		if ("`e(cmd)'" != "med4way") error 301
@@ -567,7 +567,7 @@ end med4way
 **********************/
 capture program drop validate_c
 program define validate_c, rclass
-	version 10.0
+	version 11
 	syntax [if], [c(string) cvars(string)] wrnngtxt(numlist)
 	//if c is missing, take the mean for all the variables in cvars
 	//if c is not missing, is the number of elements in c = to the number of elements in cvars? If no, issue error.
@@ -661,7 +661,7 @@ end validate_c
 
 capture program drop Display
 program define Display
-	version 10.0
+	version 11
 	syntax [, Level(cilevel) *]
 	_get_diopts diopts options , `options'
 	
