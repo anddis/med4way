@@ -1,8 +1,9 @@
 *! Hello, I'm med4way.ado
-*! v2.3.0 - 16jan2019
+*! v2.3.1 - 25jul2019
 
 /* 
 Previous versions:
+v2.3.0 - 16jan2019
 v2.2.3 - 25nov2018
 v2.2.2 - 14jun2018
 v2.2.1 - 19sep2017
@@ -229,6 +230,7 @@ program define med4way, eclass
 	
 	//tokenize main variables	
 	if ("`survoutcome'"=="true") {
+		local yvar "`_dta[st_bt]'"
 		gettoken avar varlist	: varlist
 		gettoken mvar cvars		: varlist
 	}
@@ -396,7 +398,7 @@ program define med4way, eclass
 	}
 	
 	display _n(1) as text "-> Summary" _n(1)
-	display _col(4) as text "Outcome    (yvar):"  _col(24) as res "`=cond("`survoutcome'"=="true", "_t", "`yvar'")'"
+	display _col(4) as text "Outcome    (yvar):"  _col(24) as res "`yvar'"
 	display _col(4) as text "Exposure   (avar):"  _col(24) as res "`avar'"
 	display _col(4) as text "Mediator   (mvar):"  _col(24) as res "`mvar'"
 	display _col(4) as text "Covariates (cvars):" _col(24) as res "`=cond(`nc'==0, "[ none ]", "`cvar'")'" _n(1)
