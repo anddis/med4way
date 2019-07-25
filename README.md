@@ -1,8 +1,8 @@
 # med4way
 ### A Stata command for the 4-way decomposition using parametric regression models
 
-- Current version: `2.3.0` 
-- Release date: `16jan2019`
+- Current version: `2.3.1` 
+- Release date: `25jul2019`
 
 ---
 
@@ -20,7 +20,7 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 
 ### How to cite
 
-If you use `med4way`, please cite the following paper:
+If you use `med4way`, please cite this paper:
 
 Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L., 2018. Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition. International Journal of Epidemiology. [https://doi.org/10.1093/ije/dyy236](https://doi.org/10.1093/ije/dyy236)
 
