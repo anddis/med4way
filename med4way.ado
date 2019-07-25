@@ -550,7 +550,7 @@ program define med4way, eclass
 		ereturn matrix c = `cmatrix'
 	}
 
-	ereturn local med4way_version "2.3.0"
+	ereturn local med4way_version "2.3.1"
 	ereturn local cmd "med4way"
 	ereturn local cmdline "med4way `0'"
 	//==========================================================================	
