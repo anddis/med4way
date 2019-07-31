@@ -22,7 +22,7 @@ Note: the 4-way decomposition holds without any assumptions about confounding. H
 
 If you use `med4way`, please cite this paper:
 
-Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L. [Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition](https://doi.org/10.1093/ije/dyy236). International Journal of Epidemiology. 2019;48(1):15--20. doi: 10.1093/ije/dyy236
+Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L. [Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition](https://doi.org/10.1093/ije/dyy236). International Journal of Epidemiology. 2019 Feb;48(1):15-20. doi: 10.1093/ije/dyy236
 
 ### Installation
 
@@ -55,6 +55,6 @@ Andrea Discacciati (1), Andrea Bellavia (2,3), Linda Valeri (4)
 
 ### References
 
-Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L. [Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition](https://doi.org/10.1093/ije/dyy236). International Journal of Epidemiology. 2019;48(1):15--20. doi: 10.1093/ije/dyy236
+Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L. [Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition](https://doi.org/10.1093/ije/dyy236). International Journal of Epidemiology. 2019 Feb;48(1):15-20. doi: 10.1093/ije/dyy236
 
-VanderWeele, T.J. A unification of mediation and interaction: a 4-way decomposition. Epidemiology (Cambridge, Mass.). 2014;25(5):749.
+VanderWeele, T.J. A unification of mediation and interaction: a 4-way decomposition. Epidemiology. 2014 Sep;25(5):749-61.

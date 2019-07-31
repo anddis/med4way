@@ -267,9 +267,9 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 
 {title:References}
 
-{phang}Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L. {browse "https://doi.org/10.1093/ije/dyy236":Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition}. International Journal of Epidemiology. 2019;48(1):15-20. doi: 10.1093/ije/dyy236
+{phang}Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L. {browse "https://doi.org/10.1093/ije/dyy236":Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition}. International Journal of Epidemiology. 2019 Feb;48(1):15-20. doi: 10.1093/ije/dyy236
 
-{phang}VanderWeele, T.J. A unification of mediation and interaction: a 4-way decomposition. Epidemiology (Cambridge, Mass.). 2014;25(5):749.
+{phang}VanderWeele, T.J. A unification of mediation and interaction: a 4-way decomposition. Epidemiology. 2014 Sep;25(5):749-61.
 
 
 {title:Authors}
