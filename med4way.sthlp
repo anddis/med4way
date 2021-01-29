@@ -183,7 +183,7 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 {pstd}Show the legend of the coefficients{p_end}
 {phang2}{stata med4way, coeflegend}
 
-{pstd}Test whether the excess relative risk due to controlled direct effect (ereri_cde) is statistically different from the excess relative risk due to pure indirect effect (ereri_pie){p_end}
+{pstd}Test whether the component of the total excess mean survival-time ratio due to controlled direct effect (ereri_cde) is statistically different from the component of the total excess mean survival-time ratio due to pure indirect effect (ereri_pie){p_end}
 {phang2}{stata test _b[ereri_cde] = _b[ereri_pie]}{p_end}
 
 {pstd}Given the 4 basic components of the total effect, additional derived quantities can be estimated with the post-estimation commands {helpb lincom} or {helpb nlcom}, as appropriate.
@@ -267,9 +267,18 @@ For example, to calculate the overall proportion mediated (op_m){p_end}
 
 {title:References}
 
-{phang}Discacciati, A., Bellavia, A., Lee, J.J., Mazumdar, M., Valeri, L. {browse "https://doi.org/10.1093/ije/dyy236":Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition}. International Journal of Epidemiology. 2019 Feb;48(1):15-20. doi: 10.1093/ije/dyy236
+{phang}Discacciati A., Bellavia A., Lee J.J., Mazumdar M., Valeri L. {browse "https://doi.org/10.1093/ije/dyy236":Med4way: a Stata command to investigate mediating and interactive mechanisms using the four-way effect decomposition}. International Journal of Epidemiology. 2019 Feb;48(1):15-20. doi: 10.1093/ije/dyy236
 
-{phang}VanderWeele, T.J. A unification of mediation and interaction: a 4-way decomposition. Epidemiology. 2014 Sep;25(5):749-61.
+{phang}VanderWeele T.J. A unification of mediation and interaction: a 4-way decomposition. Epidemiology. 2014 Sep;25(5):749-61.
+
+
+{title:Further readings}
+
+{phang}VanderWeele T.J. Causal mediation analysis with survival data. Epidemiology. 2011 Jul;22(4):582.
+
+{phang}Valeri L., VanderWeele T.J. SAS macro for causal mediation analysis with survival data. Epidemiology. 2015 Mar 1;26(2):e23-4.
+
+{phang}Bellavia A., Valeri L. Decomposition of the total effect in the presence of multiple mediators and interactions. American journal of epidemiology. 2018 Jun 1;187(6):1311-8.
 
 
 {title:Authors}
