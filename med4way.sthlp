@@ -183,7 +183,8 @@ See {help prefix_saving_option} for details about {it:suboptions}.
 {pstd}Show the legend of the coefficients{p_end}
 {phang2}{stata med4way, coeflegend}
 
-{pstd}Test whether the component of the total excess mean survival-time ratio due to controlled direct effect (ereri_cde) is statistically different from the component of the total excess mean survival-time ratio due to pure indirect effect (ereri_pie){p_end}
+{pstd}Test whether the component of the total excess mean survival-time ratio due to controlled direct effect (ereri_cde) 
+is statistically different from the component of the total excess mean survival-time ratio due to pure indirect effect (ereri_pie){p_end}
 {phang2}{stata test _b[ereri_cde] = _b[ereri_pie]}{p_end}
 
 {pstd}Given the 4 basic components of the total effect, additional derived quantities can be estimated with the post-estimation commands {helpb lincom} or {helpb nlcom}, as appropriate.
