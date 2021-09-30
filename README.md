@@ -2,7 +2,7 @@
 ### A Stata command for the 4-way decomposition using parametric regression models
 
 - Current version: `2.3.2` 
-- Release date: `28sep2021`
+- Release date: `30sep2021`
 
 ---
 
