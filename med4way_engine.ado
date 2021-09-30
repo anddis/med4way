@@ -137,9 +137,13 @@ end med4way_engine
 capture program drop regressml
 program define regressml, eclass
 	version 11
-	syntax varlist(min=2 numeric) [if] [, noCONStant NOLOG * ]
+	syntax varlist(min=2 numeric) [if] [fweight pweight] [, noCONStant NOLOG * ]
 
 	marksample touse
+	
+	if "`weight'" != "" {
+		local wgt "[`weight' `exp']"
+	}
 	
 	// parse options and tokenize varlist
 	_get_diopts diopts options, `options'
@@ -165,7 +169,7 @@ program define regressml, eclass
 	
 	ml model lf2 med4way_normal_lf2 /*
 		*/ (mu: `dep' = `indep', `constant') (sigma2:) /*
-		*/ if `touse', /*
+		*/ `wgt' if `touse', /*
 		*/ title("Linear regression (Maximum Likelihood)") /*
 		*/ init(`initmat', skip) search(off) /*
 		*/ `mlopts' /*

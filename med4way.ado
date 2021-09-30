@@ -1,8 +1,9 @@
 *! Hello, I'm med4way.ado
-*! v2.3.1 - 25jul2019
+*! v2.3.2 - 30sep2021
 
 /* 
 Previous versions:
+v2.3.1 - 25jul2019
 v2.3.0 - 16jan2019
 v2.2.3 - 25nov2018
 v2.2.2 - 14jun2018
